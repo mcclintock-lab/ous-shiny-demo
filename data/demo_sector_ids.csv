@@ -1,0 +1,10 @@
+sector,id
+Aquaculture,aqua_no
+Commercial fishing,comm_fish_no
+Energy Development,energy_no
+Marine Biotechnology,mar_biotech_no
+"Recreation, sports, and tourism",rec_sports_no
+Recreational fishing,rec_fish_no
+Research,research_no
+Security and defense,sec_def_no
+Touristic fishing,tour_fish_no

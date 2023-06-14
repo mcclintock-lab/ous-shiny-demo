@@ -1,6 +1,6 @@
 
 
-targets <- read_csv("data/demo_brazil_targets.csv")
+targets <- read_csv("data/demo_survey_targets.csv")
 
 
 rec_fishing <- responses %>% 
@@ -51,17 +51,22 @@ sec_def <- responses %>%
             represented = sum(n_rep),
             metric = "security_and_defense_sector")
 
+# vessels <- responses %>% 
+#   filter(sector == "Commercial fishing") %>%
+#   summarize(all_vessels = n(),
+#             # calculate number of unique vessel name/marking combos
+#             dups = sum(vessel_name != "" & vessel_marking != ""
+#                        & duplicated(vessel_name) & duplicated(vessel_marking)),
+#             # then subtract dups from total number
+#             individuals = all_vessels - dups,
+#             represented = NA,
+#             metric = "vessels") %>% 
+#   select(-c(all_vessels, dups))
+
 vessels <- responses %>% 
-  filter(sector == "Commercial fishing") %>%
-  summarize(all_vessels = n(),
-            # calculate number of unique vessel name/marking combos
-            dups = sum(vessel_name != "" & vessel_marking != ""
-                       & duplicated(vessel_name) & duplicated(vessel_marking)),
-            # then subtract dups from total number
-            individuals = all_vessels - dups,
+  summarize(individuals = length(unique(.$vessel_id)),
             represented = NA,
-            metric = "vessels") %>% 
-  select(-c(all_vessels, dups))
+            metric = "vessels")
 
 
 population <- responses %>% 

@@ -1,8 +1,8 @@
 # make a table with figures used in final OUS reports
 
 # project-specific variables
-region <- "state"
-region_label <- "state"
+region <- "region"
+region_label <- "region"
 
 # totals ----
 
@@ -10,31 +10,31 @@ make_reporting_totals_table <- function() {
   
   # individual respondents and individuals represented
   n_resp_rep <- respondent_info %>%
-    group_by(get(region)) %>% 
+    group_by(region) %>% 
     summarize("individual_respondents" = n(),
               "individuals_represented" = sum(max_rep))
   
   # sector responses
   n_sec_resp <- responses %>% 
-    group_by(get(region)) %>% 
+    group_by(region) %>% 
     count(name = "sector_responses")
   
   # individuals responded in multiple sectors
   resp_mult_sec <- responses %>% 
-    group_by(get(region), response_id) %>% 
+    group_by(region, response_id) %>% 
     count() %>% 
     mutate(multi = ifelse(n > 1, TRUE, FALSE))
   
   names(resp_mult_sec) <- c(region, "response_id", "n", "multi")
   
   resp_mult_sec <- resp_mult_sec %>%   
-    group_by(get(region)) %>% 
+    group_by(region) %>% 
     summarize(multi_sector_responses = sum(multi))
   
   # shapes
   n_shapes <- shapes %>% 
     as.data.frame() %>% 
-    group_by(get(region)) %>% 
+    group_by(region) %>% 
     count(name = "shapes_drawn")
   
   # join
@@ -42,7 +42,7 @@ make_reporting_totals_table <- function() {
     left_join(n_sec_resp) %>% 
     left_join(resp_mult_sec) %>% 
     left_join(n_shapes) %>% 
-    filter(.data[["get(region)"]] != "") %>% 
+    filter(.data[["region"]] != "") %>% 
     rename("Individual respondents" = "individual_respondents",
            "Individuals represented" = "individuals_represented",
            "Sector responses" = "sector_responses",
@@ -64,7 +64,7 @@ make_reporting_sector_table <- function() {
   
   # sector responses and individuals represented
   n_resp_rep <- responses %>%
-    group_by(get(region), sector) %>% 
+    group_by(region, sector) %>% 
     summarize("individuals_represented" = sum(n_rep),
               "sector_responses" = n(),
               "percent_total_sector_responses" = 
@@ -73,14 +73,14 @@ make_reporting_sector_table <- function() {
   # shapes
   n_shapes <- shapes %>% 
     as.data.frame() %>% 
-    group_by(get(region), sector) %>% 
+    group_by(region, sector) %>% 
     count(name = "shapes_drawn")
   
   reporting_by_sector <- n_resp_rep %>% 
     left_join(n_shapes) %>% 
     ungroup() %>% 
-    complete(.data[["get(region)"]], sector) %>%
-    filter(.data[["get(region)"]] != "") %>% 
+    complete(.data[["region"]], sector) %>%
+    filter(.data[["region"]] != "") %>% 
     mutate(
       "Individuals represented" = ifelse(is.na(individuals_represented), 0, individuals_represented),
       "Sector responses" = ifelse(is.na(sector_responses), 0, sector_responses),

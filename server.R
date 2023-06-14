@@ -131,6 +131,7 @@ shinyServer(function(input, output) {
     
     if (input$filter_id == TRUE) {
       
+      # parse user input for filter by response_id
       shape_id <- as.numeric(strsplit(input$shape_id, split = ", |,")[[1]])
       
       shapes <- shapes %>%
@@ -138,9 +139,19 @@ shinyServer(function(input, output) {
       
     } else {
       
+      if ("all" %in% input$map_regions) {
+        
+        map_regions <- unique(shapes$region)
+        
+      } else {
+        
+        map_regions <- input$map_regions
+        
+      }
+      
       if (input$map_facil_var == "both") {
         
-        map_facil <- c("true", "false")
+        map_facil <- c(TRUE, FALSE)
         
       } else {
         
@@ -150,11 +161,14 @@ shinyServer(function(input, output) {
       if ("All" %in% input$map_sector) {
         
         shapes <- shapes %>%
-          filter(is_facilitated %in% map_facil)
+          filter(region %in% map_regions,
+                 is_facilitated %in% map_facil)
+        
       } else {
         
         shapes <- shapes %>%
-          filter(sector %in% input$map_sector,
+          filter(region %in% map_regions,
+                 sector %in% input$map_sector,
                  is_facilitated %in% map_facil)
       }
     }
@@ -173,7 +187,7 @@ shinyServer(function(input, output) {
         stroke = TRUE,
         weight = 0.02,
         color = "black",
-        fillOpacity = 0.05,
+        fillOpacity = 0.1,
         fillColor = "red", 
         highlight = highlightOptions(color='yellow',
                                      weight=5,

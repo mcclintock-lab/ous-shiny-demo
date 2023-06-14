@@ -5,19 +5,19 @@
 make_datatable <- function() {
   
   # create df with desired columns
-  response_table <- responses %>%
-    select(
-      date, time, response_id, name, facilitator_name, account_email,
-      sector, gender, contains("born"), n_rep, opt_in) %>% 
-    mutate(
-      response_id = as.character(response_id)) %>% 
-    rename("Response ID" = response_id,
-           "Number of people represented" = n_rep,
-           "Opt in for review" = opt_in,
-           "Age" = yrborn)
-  
-  colnames(response_table) <- gsub("_", " ",
-                                   str_to_title(colnames(response_table)))
+  response_table <- responses #%>%
+  #   select(
+  #     date, time, response_id, name, facilitator_name, account_email,
+  #     sector, gender, contains("born"), n_rep, opt_in) %>% 
+  #   mutate(
+  #     response_id = as.character(response_id)) %>% 
+  #   rename("Response ID" = response_id,
+  #          "Number of people represented" = n_rep,
+  #          "Opt in for review" = opt_in,
+  #          "Age" = yrborn)
+  # 
+  # colnames(response_table) <- gsub("_", " ",
+  #                                  str_to_title(colnames(response_table)))
   
   # output datatable object
   datatable(response_table,

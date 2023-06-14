@@ -2,7 +2,7 @@
 
 
 dashboardPage(
-  dashboardHeader(title = "Brazil Ocean Use"),
+  dashboardHeader(title = "Ocean Use Survey"),
   dashboardSidebar(
     sidebarMenu(
       
@@ -48,7 +48,7 @@ dashboardPage(
                                 box(
                                   
                                   tags$a(
-                                    href = "https://next.seasket.ch/blueazores/app",
+                                    href = "https://seasketch.org",
                                     target="_blank",
                                     img(src = "images/seasketch-logo.png",
                                         style = "height: 35px; margin-bottom: 17px; margin-top: 10px;"),
@@ -195,12 +195,12 @@ dashboardPage(
                       # choose region?
                       checkboxGroupButtons("map_regions", "Regions: ",
                                            width = "100%",
-                                           selected = "terceira",
+                                           selected = "all",
                                            choices = list("All" = "all",
-                                                          "North" = "north",
-                                                          "Northeast" = "northeast",
-                                                          "Southeast" = "southeast",
-                                                          "South" = "south")),
+                                                          "North Coast" = "North Coast",
+                                                          "Bay Area" = "Bay Area",
+                                                          "Central Coast" = "Central Coast",
+                                                          "Southern Coast" = "Southern Coast")),
                       
                       # choose sectors
                       multiInput("map_sector", "Sectors: ",
