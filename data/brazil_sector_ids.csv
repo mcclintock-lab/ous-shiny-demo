@@ -1,0 +1,12 @@
+"sector","export_id"
+"Commercial fishing","comfish_no"
+"Recreational fishing","recfish_no"
+"Recreation, sports and tourism","rectour_no"
+"Aquaculture","aquacult_no"
+"Touristic fishing","tourfish_no"
+"Scientific Research, Technological Development and Environmental Monitoring","scitech_no"
+"Underwater cultural heritage","cult_no"
+"Security and defense","secdef_no",
+"Energy Development","energy_no",
+"Non-Metallic Mineral Resources","minres_no",
+"Marine Biotechnology","marbiotech_no"
