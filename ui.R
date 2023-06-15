@@ -7,7 +7,7 @@ dashboardPage(
     sidebarMenu(
       
       id = "tabs",
-      menuItem("Analytics", tabName = "analytics", icon = icon("dashboard", verify_fa = F)),
+      menuItem("Overview", tabName = "analytics", icon = icon("dashboard", verify_fa = F)),
       menuItem("Data Explorer", tabName = "explore", icon = icon("th", verify_fa = F)),
       menuItem("Shape Viewer", tabName = "shapes", icon = icon("map", verify_fa = F)),
       menuItem("Reporting", tabName = "reporting", icon = icon("file-lines", verify_fa = F))
@@ -192,15 +192,39 @@ dashboardPage(
                       actionBttn("clear_shape_filters", "Clear Map & Filters",
                                  style = "pill", size = "sm", icon = icon("refresh")),
                       
-                      # choose region?
-                      checkboxGroupButtons("map_regions", "Regions: ",
+                      htmlOutput("region_text"),
+                      
+                      # select / deselect all regions
+                      actionBttn(
+                        inputId = "select_all_map_regions",
+                        label = "Select All",
+                        style = "bordered", 
+                        #color = "primary",
+                        size = "sm"
+                      ),
+                      
+                      actionBttn(
+                        inputId = "deselect_all_map_regions",
+                        label = "Deselect All",
+                        style = "bordered", 
+                        #color = "primary",
+                        size = "sm"
+                      ),
+                      
+                      # choose region
+                      checkboxGroupButtons("map_regions",
                                            width = "100%",
-                                           selected = "all",
-                                           choices = list("All" = "all",
-                                                          "North Coast" = "North Coast",
+                                           individual = TRUE,
+                                           selected = region_list, # defined in global.R
+                                           choices = list("North Coast" = "North Coast",
                                                           "Bay Area" = "Bay Area",
                                                           "Central Coast" = "Central Coast",
-                                                          "Southern Coast" = "Southern Coast")),
+                                                          "Southern Coast" = "Southern Coast"),
+                                           checkIcon = list(
+                                             yes = tags$i(class = "fa fa-circle", 
+                                                          style = "color: steelblue"),
+                                             no = tags$i(class = "fa fa-circle-o", 
+                                                         style = "color: steelblue"))),
                       
                       # choose sectors
                       multiInput("map_sector", "Sectors: ",

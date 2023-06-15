@@ -48,7 +48,7 @@ for (i in 1:n_resp) {
 }
 
 # gen random number represented
-norm_dist <- rnorm(n_resp, 1, 4) %>%
+norm_dist <- rnorm(n_resp, 1, 3) %>%
   abs() %>% 
   round()
 

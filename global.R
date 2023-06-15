@@ -26,9 +26,6 @@ sector_ids <- read.csv(here("data/demo_sector_ids.csv"))
 # date project officially launched
 launch_date <- "2022-09-06"
 
-# if there is a regional designation that is of interest to group by, define it here
-region <- "region"
-
 temp_data_date <- read_rds(here("data/temp/temp_data_date.RDS"))
 data_update <- as_datetime(readLines("data/temp/data_update.txt"), tz = "America/Los_Angeles")
 
@@ -44,6 +41,11 @@ if (temp_data_date >= data_update) {
   source("data_prep.R")
 }
 
+# if there is a regional designation that is of interest to group by, define it here
+region <- "region"
+region_list <- unique(respondent_info[, get(region)])
+
+# load scripts
 source("R/make_plots.R")
 source("R/make_data_explorer.R")
 source("R/make_target_table.R")

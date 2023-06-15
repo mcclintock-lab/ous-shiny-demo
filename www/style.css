@@ -190,6 +190,23 @@ html, body {
    height: calc(80vh) !important;
  }
  
+ #select_all_map_regions {
+   margin-bottom: 15px;
+   border-color: #2B7EC2;
+   color: #2B7EC2;
+ }
+ 
+  #deselect_all_map_regions {
+   margin-bottom: 15px;
+   border-color: #2B7EC2;
+   color: #2B7EC2;
+ }
+ 
+ #region_text {
+   font-weight: bold;
+   margin-bottom: 7px;
+ }
+ 
  #filter-facil {
    margin-top: 30px;
    width: 150px;

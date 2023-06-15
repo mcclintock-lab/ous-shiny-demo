@@ -224,6 +224,30 @@ shinyServer(function(input, output) {
     
   })
   
+  # filter by id
+  output$region_text <- renderText({
+    
+    "Region: "
+  })
+  
+  observeEvent(input$select_all_map_regions, {
+    
+    updateCheckboxGroupButtons(session = getDefaultReactiveDomain(),
+                               inputId = "map_regions", 
+                               selected = unique(region_list) # region_list defined in global.R
+    )
+    
+  })
+  
+  observeEvent(input$deselect_all_map_regions, {
+    
+    updateCheckboxGroupButtons(session = getDefaultReactiveDomain(),
+                               inputId = "map_regions", 
+                               selected = character(0)
+    )
+    
+  })
+  
   
   # reporting -----------------------------
   
