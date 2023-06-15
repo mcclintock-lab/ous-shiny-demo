@@ -96,8 +96,6 @@ random_data <- d %>%
 write_rds(random_data, "data/temp/random_data.RDS")
 
 
-# shapes generated randomly with python script and joined with informal regions in qgis
-# shapes <- read_sf("/Users/menzies/shiny/ous-shiny-demo/data/random-cali-shapes.fgb")
 
 
 

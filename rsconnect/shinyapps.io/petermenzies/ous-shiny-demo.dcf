@@ -1,0 +1,11 @@
+name: ous-shiny-demo
+title:
+username:
+account: petermenzies
+server: shinyapps.io
+hostUrl: https://api.shinyapps.io/v1
+appId: 9317261
+bundleId: 7351365
+url: https://petermenzies.shinyapps.io/ous-shiny-demo/
+when: 1686863565.34123
+lastSyncTime: 1686863565.34123

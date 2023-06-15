@@ -34,7 +34,7 @@ if (temp_data_date >= data_update) {
 
   responses <- read_rds(here("data/temp/responses.RDS"))
   respondent_info <- read_rds(here("data/temp/respondent_info.RDS"))
-  shapes <- read_sf(here("data/temp/shapes.fgb"))
+  shapes <- read_rds(here("data/temp/shapes.RDS"))
 
 } else {
   

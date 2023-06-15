@@ -33,7 +33,7 @@ respondent_info <- respondent_info %>%
 
 
 # read in and join shapes
-shapes <- read_sf("/Users/menzies/shiny/ous-shiny-demo/data/random-california-shapes-clipped-regions.fgb")
+shapes <- read_sf("data/random-california-shapes-clipped-regions.fgb")
 
 # cut n shapes to random response df length
 n_sec_resp <- nrow(responses)
@@ -62,7 +62,7 @@ temp_data_date <- Sys.time()
 write_rds(temp_data_date, here("data/temp/temp_data_date.RDS"))
 write_rds(responses, here("data/temp/responses.RDS"))
 write_rds(respondent_info, here("data/temp/respondent_info.RDS"))
-write_sf(shapes, here("data/temp/shapes.fgb"), delete_dsn = TRUE)
+write_rds(shapes, here("data/temp/shapes.RDS"))
  
 
 gc()
