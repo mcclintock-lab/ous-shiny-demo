@@ -213,6 +213,9 @@ shinyServer(function(input, output) {
   # clear filter button
   observeEvent(input$clear_shape_filters, {
     
+    updateCheckboxGroupButtons(session = getDefaultReactiveDomain(),
+                     inputId = "map_regions", selected = character(0))
+    
     updateMultiInput(session = getDefaultReactiveDomain(),
                      inputId = "map_sector", selected = character(0))
     
@@ -227,7 +230,7 @@ shinyServer(function(input, output) {
   # filter by id
   output$region_text <- renderText({
     
-    "Region: "
+    "Regions: "
   })
   
   observeEvent(input$select_all_map_regions, {

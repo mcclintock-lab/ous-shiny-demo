@@ -238,8 +238,8 @@ dashboardPage(
                       div(id = "filter-facil",
                           selectInput("map_facil_var", label = "Filter by Facilitation",
                                       choices = list("Both" = "both",
-                                                     "Facilitated" = "true",
-                                                     "Unfacilitated" = "false"))
+                                                     "Facilitated" = TRUE,
+                                                     "Unfacilitated" = FALSE))
                       ),
                       
                       # filter by id text, button, and input
