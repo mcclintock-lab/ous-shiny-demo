@@ -1,0 +1,11 @@
+name: ous-shiny-demo
+title:
+username:
+account: seasketch
+server: shinyapps.io
+hostUrl: https://api.shinyapps.io/v1
+appId: 9343903
+bundleId: 7371882
+url: https://seasketch.shinyapps.io/ous-shiny-demo/
+when: 1687365431.19295
+lastSyncTime: 1687365431.19296
