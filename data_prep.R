@@ -50,6 +50,9 @@ id_regions <- shapes %>%
   as.data.frame() %>% 
   select(response_id, region)
 
+# remove duplicate response ids
+id_regions <- id_regions[!duplicated(id_regions$response_id), ]
+
 respondent_info <- respondent_info %>% 
   left_join(id_regions)
 
