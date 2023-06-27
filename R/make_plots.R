@@ -51,14 +51,14 @@ make_sector_plot <- function(island_name = NULL, metric, all = FALSE) {
                alpha = 0.05, radius = grid::unit(5, "pt")) +  
                     #width = 0.05, just = 0) +
       coord_flip() +
-      labs(x = "Sector", y = "\nCount") +
+      labs(x = "Sector\n", y = "\nCount") +
       theme_minimal() +
       theme(
         axis.text.x = element_text(size = 12),
         axis.text.y = element_text(size = 12),
         axis.title.x = element_text(size = 14, face = "bold"),
         axis.title.y = element_text(size = 14, face = "bold"),
-        plot.margin = unit(c(0, 0, 5, 0), units = "mm")
+        plot.margin = unit(c(0, 0, 5, 2), units = "mm")
       )
     
   } else {
@@ -73,14 +73,14 @@ make_sector_plot <- function(island_name = NULL, metric, all = FALSE) {
     ggplot(df, aes(x = reorder(sector, n), y = n)) +
       geom_chicklet(fill = "#2E4052", radius = grid::unit(5, "pt")) +
       coord_flip() +
-      labs(x = "Sector", y = "\nCount") +
+      labs(x = "Sector\n", y = "\nCount") +
       theme_minimal() +
       theme(
         axis.text.x = element_text(size = 12),
         axis.text.y = element_text(size = 12),
         axis.title.x = element_text(size = 14, face = "bold"),
         axis.title.y = element_text(size = 14, face = "bold"),
-        plot.margin = unit(c(0, 0, 5, 0), units = "mm"),
+        plot.margin = unit(c(0, 0, 5, 2), units = "mm"),
       )
   }
 }
