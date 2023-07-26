@@ -26,10 +26,16 @@ sector_ids <- read.csv(here("data/demo_sector_ids.csv"))
 # date project officially launched
 launch_date <- "2022-09-06"
 
+# datetime temp data files were generated
 temp_data_date <- read_rds(here("data/temp/temp_data_date.RDS"))
+
+# datetime data were last downloaded from seasketch
 data_update <- as_datetime(readLines("data/temp/data_update.txt"), tz = "America/Los_Angeles")
 
+# data update in ymd format for exported file names
+data_update_ymd <- gsub(" .*", "", as.character(temp_data_date))
 
+# load temp data files if data_prep.R was run since last data download
 if (temp_data_date >= data_update) {
 
   responses <- read_rds(here("data/temp/responses.RDS"))

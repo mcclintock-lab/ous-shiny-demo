@@ -235,6 +235,13 @@ html, body {
    margin-bottom: 20px;
  }
  
+ #download_filtered_shapes_bttn {
+   background-color: #2B7EC2;
+   color: white;
+   margin-bottom: 20px;
+   margin-left: 10px;
+ }
+ 
  #shapes-number {
    font-size: 20px;
    font-weight: bold;
