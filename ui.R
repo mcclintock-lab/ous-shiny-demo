@@ -8,7 +8,7 @@ dashboardPage(
       id = "tabs",
       menuItem(
         "Overview",
-        tabName = "analytics",
+        tabName = "overview",
         icon = icon("dashboard", verify_fa = F)
       ),
       menuItem(
@@ -38,9 +38,9 @@ dashboardPage(
     
     # main menu items
     tabItems(
-      # ANALYTICS -------------------------------------------------------------
+      # OVERVIEW -------------------------------------------------------------
       tabItem(
-        tabName = "analytics",
+        tabName = "overview",
         
         # totals and responses by sector --------------------------------
         fluidRow(
