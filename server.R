@@ -122,7 +122,7 @@ shinyServer(function(input, output) {
       shape_id <-
         as.numeric(strsplit(input$shape_id, split = ", |,")[[1]])
       
-      shapes <- shapes %>%
+      shapes <- shapes |>
         filter(response_id %in% shape_id)
       
     } else {
@@ -142,12 +142,12 @@ shinyServer(function(input, output) {
       }
       
       if ("All" %in% input$map_sector) {
-        shapes <- shapes %>%
+        shapes <- shapes |>
           filter(region %in% map_regions,
                  is_facilitated %in% map_facil)
         
       } else {
-        shapes <- shapes %>%
+        shapes <- shapes |>
           filter(
             region %in% map_regions,
             sector %in% input$map_sector,
@@ -166,10 +166,10 @@ shinyServer(function(input, output) {
     })
     
     # render map
-    leaflet(shapes) %>%
-      addProviderTiles("Esri.WorldStreetMap") %>%
+    leaflet(shapes) |>
+      addProviderTiles("Esri.WorldStreetMap") |>
       # addTiles("https://tiles.stadiamaps.com/tiles/outdoors/{z}/{x}/{y}{r}.png",
-      # options = providerTileOptions(apikey = "")) %>%
+      # options = providerTileOptions(apikey = "")) |>
       addPolygons(
         stroke = TRUE,
         weight = 0.02,
@@ -195,8 +195,8 @@ shinyServer(function(input, output) {
           "<br><b>Facilitator:</b> ",
           shapes$facilitator_name
         )
-      ) %>%
-      addPolylines(color = "black", weight = 0.5) %>%
+      ) |>
+      addPolylines(color = "black", weight = 0.5) |>
       addControl(shapes_displayed, position = "topright")
   })
   

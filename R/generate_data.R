@@ -19,7 +19,7 @@ genders <- sample(gender_options, n_resp, prob=c(0.45, 0.45, 0.1), replace=TRUE)
 genders_input <- ifelse(genders == "Rather not say", NA, genders)
 
 # gen random names using genders
-names <- randomNames(gender = genders_input, name.order = "first.last") %>% 
+names <- randomNames(gender = genders_input, name.order = "first.last") |> 
   str_remove(",")
 
 # gen random age_ranges
@@ -48,8 +48,8 @@ for (i in 1:n_resp) {
 }
 
 # gen random number represented
-norm_dist <- rnorm(n_resp, 1, 3) %>%
-  abs() %>% 
+norm_dist <- rnorm(n_resp, 1, 3) |>
+  abs() |> 
   round()
 
 n_rep <- ifelse(norm_dist == 0, 1, norm_dist)
@@ -60,7 +60,7 @@ is_facil_options <- c(TRUE, FALSE)
 is_facilitated <- sample(is_facil_options, n_resp, prob = c(0.7, 0.3), replace = TRUE)
 
 # gen facilitators
-facil_options <- randomNames(30, name.order = "first.last") %>% 
+facil_options <- randomNames(30, name.order = "first.last") |> 
   str_remove(",")
 
 facilitators = sample(facil_options, n_resp, replace = TRUE)
@@ -70,7 +70,7 @@ facilitators = sample(facil_options, n_resp, replace = TRUE)
 d <- data.frame(response_id = ids, date = dates, name = names,
                 facilitator_name = facilitators, gender = genders,
                 age_range = age_ranges, sector = sectors, n_rep = n_rep,
-                is_facilitated = is_facilitated) %>% 
+                is_facilitated = is_facilitated) |> 
   mutate(facilitator_name = ifelse(is_facilitated == FALSE, NA, facilitator_name))
 
 
@@ -87,9 +87,9 @@ vessel_ids <- sample(vessel_options, n_resp, replace = TRUE)
 
 
 # add to df and make sure they only apply to comm fish sector
-random_data <- d %>% 
+random_data <- d |> 
   mutate(harv_license = harv_licenses,
-         vessel_id = vessel_ids) %>% 
+         vessel_id = vessel_ids) |> 
   mutate(harv_license = ifelse(str_detect(sector, "Commercial fishing"), harv_license, FALSE),
          vessel_id = ifelse(str_detect(sector, "Commercial fishing"), vessel_id, NA))
 

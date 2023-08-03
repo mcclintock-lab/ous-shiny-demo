@@ -6,10 +6,10 @@ make_sector_df <- function(metric) {
   # metric is selected from a drop down menu in the ui
   if (metric == "responses") {
     
-    df <- responses %>% 
-      group_by(sector) %>% 
-      count() %>% 
-      mutate(sector = as.character(sector)) %>% 
+    df <- responses |> 
+      group_by(sector) |> 
+      count() |> 
+      mutate(sector = as.character(sector)) |> 
       mutate(sector = case_when(sector == "Scientific Research, Technological Development and Environmental Monitoring" ~ "Research, tech and monitoring",
                                 TRUE ~ sector),
              sector = str_wrap(sector, width = 20),
@@ -19,10 +19,10 @@ make_sector_df <- function(metric) {
     
   } else if (metric == "represented") {
     
-    df <- responses %>% 
-      group_by(sector) %>% 
-      summarize(n = sum(n_rep)) %>% 
-      mutate(sector = as.character(sector)) %>% 
+    df <- responses |> 
+      group_by(sector) |> 
+      summarize(n = sum(n_rep)) |> 
+      mutate(sector = as.character(sector)) |> 
       mutate(sector = case_when(sector == "Scientific Research, Technological Development and Environmental Monitoring" ~ "Research, tech and monitoring",
                                 TRUE ~ sector),
              sector = str_wrap(sector, width = 20),
@@ -42,7 +42,7 @@ make_sector_plot <- function(island_name = NULL, metric, all = FALSE) {
     
     targets_df <- sector_progress
     
-    df <- make_sector_df(metric = metric) %>%
+    df <- make_sector_df(metric = metric) |>
       left_join(targets_df)
     
     ggplot(df, aes(x = reorder(sector, n), y = n)) +
@@ -67,7 +67,7 @@ make_sector_plot <- function(island_name = NULL, metric, all = FALSE) {
     
     targets_df <- sector_progress
     
-    df <- make_sector_df(metric = metric) %>%
+    df <- make_sector_df(metric = metric) |>
       left_join(targets_df)
     
     ggplot(df, aes(x = reorder(sector, n), y = n)) +
@@ -89,19 +89,19 @@ make_sector_plot <- function(island_name = NULL, metric, all = FALSE) {
 # make demographics plot ----
 make_demo_plot <- function(df) {
     
-    age_resp <- round((1 - nrow(respondent_info %>% filter(is.na(age_range))) / nrow(respondent_info)) * 100)
+    age_resp <- round((1 - nrow(respondent_info |> filter(is.na(age_range))) / nrow(respondent_info)) * 100)
     age_resp_label <- paste0(age_resp, "% reported age")
-    gender_resp <- round((1 - nrow(respondent_info %>% filter(is.na(gender))) / nrow(respondent_info)) * 100)
+    gender_resp <- round((1 - nrow(respondent_info |> filter(is.na(gender))) / nrow(respondent_info)) * 100)
     gender_resp_label <- paste0(gender_resp, "% reported gender") 
     
-    df <- respondent_info %>%
+    df <- respondent_info |>
       filter(!is.na(age_range),
-             !is.na(gender)) %>% 
-      group_by(age_range, gender) %>% 
+             !is.na(gender)) |> 
+      group_by(age_range, gender) |> 
       count()
     
-    age_count <- df %>% 
-      group_by(age_range) %>% 
+    age_count <- df |> 
+      group_by(age_range) |> 
       summarize(n = sum(n))
     
     age_count_max <- max(age_count$n)

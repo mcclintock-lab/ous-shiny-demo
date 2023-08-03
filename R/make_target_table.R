@@ -3,56 +3,56 @@
 targets <- read_csv("data/demo_survey_targets.csv")
 
 
-rec_fishing <- responses %>% 
-  filter(sector == "Recreational fishing") %>% 
+rec_fishing <- responses |> 
+  filter(sector == "Recreational fishing") |> 
   summarize(individuals = n(),
             represented = sum(n_rep),
             metric = "recreational_fishing_sector")
 
-comm_fishing <- responses %>% 
-  filter(sector == "Commercial fishing") %>% 
+comm_fishing <- responses |> 
+  filter(sector == "Commercial fishing") |> 
   summarize(individuals = n(),
             represented = sum(n_rep),
             metric = "commercial_fishing_sector")
 
-tour_fishing <- responses %>% 
-  filter(sector == "Touristic fishing") %>% 
+tour_fishing <- responses |> 
+  filter(sector == "Touristic fishing") |> 
   summarize(individuals = n(),
             represented = sum(n_rep),
             metric = "touristic_fishing_sector")
 
-uw_cultural <- responses %>% 
-  filter(sector == "Underwater cultural heritage") %>% 
+uw_cultural <- responses |> 
+  filter(sector == "Underwater cultural heritage") |> 
   summarize(individuals = n(),
             represented = sum(n_rep),
             metric = "underwater_cultural_heritage_sector")
 
-rec_sports <- responses %>% 
-  filter(sector == "Recreation, sports and tourism") %>% 
+rec_sports <- responses |> 
+  filter(sector == "Recreation, sports and tourism") |> 
   summarize(individuals = n(),
             represented = sum(n_rep),
             metric = "recreation_sports_and_tourism_sector")
 
-sci_tech <- responses %>% 
-  filter(sector == "Scientific Research, Technological Development and Environmental Monitoring") %>% 
+sci_tech <- responses |> 
+  filter(sector == "Scientific Research, Technological Development and Environmental Monitoring") |> 
   summarize(individuals = n(),
             represented = sum(n_rep),
             metric = "science_tech_and_monitoring_sector")
 
-aquaculture <- responses %>% 
-  filter(sector == "Aquaculture") %>% 
+aquaculture <- responses |> 
+  filter(sector == "Aquaculture") |> 
   summarize(individuals = n(),
             represented = sum(n_rep),
             metric = "aquaculture_sector")
 
-sec_def <- responses %>% 
-  filter(sector == "Security and defense") %>% 
+sec_def <- responses |> 
+  filter(sector == "Security and defense") |> 
   summarize(individuals = n(),
             represented = sum(n_rep),
             metric = "security_and_defense_sector")
 
-# vessels <- responses %>% 
-#   filter(sector == "Commercial fishing") %>%
+# vessels <- responses |> 
+#   filter(sector == "Commercial fishing") |>
 #   summarize(all_vessels = n(),
 #             # calculate number of unique vessel name/marking combos
 #             dups = sum(vessel_name != "" & vessel_marking != ""
@@ -60,21 +60,21 @@ sec_def <- responses %>%
 #             # then subtract dups from total number
 #             individuals = all_vessels - dups,
 #             represented = NA,
-#             metric = "vessels") %>% 
+#             metric = "vessels") |> 
 #   select(-c(all_vessels, dups))
 
-vessels <- responses %>% 
-  summarize(individuals = length(unique(.$vessel_id)),
+vessels <- responses |> 
+  summarize(individuals = length(unique(vessel_id)),
             represented = NA,
             metric = "vessels")
 
 
-population <- responses %>% 
-  select(response_id, n_rep) %>% 
-  group_by(response_id) %>% 
-  mutate(n_rep = max(n_rep)) %>% 
-  distinct() %>% 
-  ungroup() %>% 
+population <- responses |> 
+  select(response_id, n_rep) |> 
+  group_by(response_id) |> 
+  mutate(n_rep = max(n_rep)) |> 
+  distinct() |> 
+  ungroup() |> 
   summarize(individuals = n(),
             represented = sum(n_rep, na.rm = TRUE),
             metric = "population")
@@ -88,20 +88,20 @@ progress <- bind_rows(list(rec_fishing, comm_fishing, tour_fishing,
 rm(rec_fishing, comm_fishing, tour_fishing, vessels, population,
    uw_cultural, rec_sports, sci_tech, aquaculture, sec_def)
 
-targets_progress <- targets %>% 
+targets_progress <- targets |> 
   full_join(progress) 
 
-sector_progress <- targets_progress %>%
-  filter(str_detect(metric, "sector")) %>%
+sector_progress <- targets_progress |>
+  filter(str_detect(metric, "sector")) |>
   mutate(sector = case_when(metric == "commercial_fishing_sector" ~ "Commercial fishing",
                             metric == "touristic_fishing_sector" ~ "Touristic fishing",
                             metric == "recreational_fishing_sector" ~ "Recreational fishing",
                             metric == "rec_sports_sector" ~ "Recreation, sports, and tourism",
-                            metric == "sci_tech_sector" ~ "Science, tech, and monitoring")) %>%
+                            metric == "sci_tech_sector" ~ "Science, tech, and monitoring")) |>
   select(sector, target)
 
 
-targets_progress <- targets_progress %>% 
+targets_progress <- targets_progress |> 
   mutate(
     percent = ifelse(
       str_detect(metric, "sector|population"),
@@ -110,12 +110,12 @@ targets_progress <- targets_progress %>%
     percent = ifelse(percent > 1, 1, percent),
     metric = str_replace_all(metric, "_", " "),
     metric = str_to_title(metric),
-    metric = str_replace(metric, " And ", " and ")) #%>% 
+    metric = str_replace(metric, " And ", " and ")) #|> 
 # mutate(percent = ifelse(!is.na(target), paste0(percent, " %"), NA))
 
 # make sure all island/metric combos are represented
-targets_progress <- complete(targets_progress, metric) %>% 
-  arrange("metric") %>% 
+targets_progress <- complete(targets_progress, metric) |> 
+  arrange("metric") |> 
   # replace NAs with 0s
   mutate(individuals = ifelse(is.na(individuals), 0, individuals),
          represented = ifelse(is.na(represented) & metric != "Vessels", 0, represented))
@@ -135,7 +135,7 @@ make_target_table <- function() {
                              "Individuals represented", "Percent achieved"),
             options = list(lengthChange = FALSE, dom = "t",
                            pageLength = nrow(df),
-                           columnDefs = list(list(className = 'dt-center', targets = 2:5)))) %>% 
+                           columnDefs = list(list(className = 'dt-center', targets = 2:5)))) |> 
     # highlight column of metric (rep or indiv) that is associated with "percent achieved"
     formatStyle(columns = "individuals", valueColumns = "metric",
                 backgroundColor = styleEqual(
@@ -149,7 +149,7 @@ make_target_table <- function() {
                   '5px'),
                 fontWeight = styleEqual(
                   unique(targets_progress$metric[!str_detect(targets_progress$metric, "Sector|Population")]),
-                  "bold")) %>% 
+                  "bold")) |> 
     formatStyle(columns = "represented", valueColumns = "metric",
                 backgroundColor = styleEqual(
                   unique(targets_progress$metric[str_detect(targets_progress$metric, "Sector|Population")]),
@@ -162,10 +162,10 @@ make_target_table <- function() {
                   '5px'),
                 fontWeight = styleEqual(
                   unique(targets_progress$metric[str_detect(targets_progress$metric, "Sector|Population")]),
-                  "bold")) %>% 
+                  "bold")) |> 
     # percent color ramp formatting
     formatStyle(columns = "percent", backgroundColor = styleInterval(breaks, colors),
-                "border-radius" = "5px") %>% 
+                "border-radius" = "5px") |> 
     formatPercentage(columns = "percent", mark = ".", digits = 0)
 }
 

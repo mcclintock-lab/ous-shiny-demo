@@ -105,7 +105,7 @@ dashboardPage(
               align = "center",
               collapsible = TRUE,
               
-              dataTableOutput("target_table") %>%
+              dataTableOutput("target_table") |>
                 withSpinner(type = 8)
             )
           )
@@ -134,7 +134,7 @@ dashboardPage(
                     
                   ),
                   
-                  plotOutput("resp_plot") %>%
+                  plotOutput("resp_plot") |>
                     withSpinner(type = 8)
                 )
               ),
@@ -150,7 +150,7 @@ dashboardPage(
                   width = 12,
                   collapsible = TRUE,
                   
-                  plotOutput("demo_plot") %>%
+                  plotOutput("demo_plot") |>
                     withSpinner(type = 8)
                 )
               )
@@ -177,7 +177,7 @@ dashboardPage(
                           icon = icon("map")
                         ),
                         
-                        dataTableOutput("datatable") %>%
+                        dataTableOutput("datatable") |>
                           withSpinner(type = 8)
                         
                       ),
@@ -284,7 +284,7 @@ dashboardPage(
                     
                     box(
                       width = "50%",
-                      leafletOutput("map") %>%
+                      leafletOutput("map") |>
                         withSpinner(type = 8)
                     ))
               )),
@@ -307,7 +307,7 @@ dashboardPage(
               style = "jelly"
             ),
             
-            dataTableOutput("reporting_totals_table") %>%
+            dataTableOutput("reporting_totals_table") |>
               withSpinner(type = 8)
           )
         ),
@@ -326,7 +326,7 @@ dashboardPage(
               style = "jelly"
             ),
             
-            dataTableOutput("reporting_by_sector_table") %>%
+            dataTableOutput("reporting_by_sector_table") |>
               withSpinner(type = 8)
           )
         )

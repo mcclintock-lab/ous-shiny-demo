@@ -16,19 +16,19 @@ respondent_info <- readRDS("data/temp/random_data.RDS")
 # create sector responses df ---- 
 
 # create df of individual entries pertaining to each sector a respondent drew a shape(s) for
-responses <- respondent_info %>% 
+responses <- respondent_info |> 
   # regex below finds commas surrounded by non-white space and replaces JUST the comma with "|"
   # needed to differentiate between commas *within* and *between* sector names
-  mutate(sector = gsub("(\\S),(\\S)", "\\1|\\2", sector)) %>% 
+  mutate(sector = gsub("(\\S),(\\S)", "\\1|\\2", sector)) |> 
   separate_rows(sector, sep = "\\|")
 
 
 # add max_rep to respondent_info
-max_rep <- responses %>% 
-  group_by(response_id) %>% 
+max_rep <- responses |> 
+  group_by(response_id) |> 
   summarize(max_rep = max(n_rep))
 
-respondent_info <- respondent_info %>% 
+respondent_info <- respondent_info |> 
   left_join(max_rep)
 
 
@@ -42,21 +42,21 @@ start_index <- n_shapes_total - n_sec_resp + 1
 
 shapes <- shapes[start_index:n_shapes_total,]
 
-shapes <- shapes %>% 
+shapes <- shapes |> 
   bind_cols(responses)
 
 # add regions to respondent_info and responses
-id_regions <- shapes %>% 
-  as.data.frame() %>% 
+id_regions <- shapes |> 
+  as.data.frame() |> 
   select(response_id, region)
 
 # remove duplicate response ids
 id_regions <- id_regions[!duplicated(id_regions$response_id), ]
 
-respondent_info <- respondent_info %>% 
+respondent_info <- respondent_info |> 
   left_join(id_regions)
 
-responses <- responses %>% 
+responses <- responses |> 
   left_join(id_regions)
 
 # write temporary files
