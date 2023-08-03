@@ -5,7 +5,7 @@ account: seasketch
 server: shinyapps.io
 hostUrl: https://api.shinyapps.io/v1
 appId: 9343903
-bundleId: 7394257
+bundleId: 7503407
 url: https://seasketch.shinyapps.io/ous-shiny-demo/
-when: 1687885113.28336
-lastSyncTime: 1687885113.28337
+when: 1690477075.36992
+lastSyncTime: 1690477075.36993
