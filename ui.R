@@ -7,7 +7,7 @@ dashboardPage(
                     class = "dropdown",
                     actionBttn(
                       inputId = "refresh",
-                      label = NULL,
+                      label = "Refresh App",
                       icon = icon("refresh"),
                       style = "simple",
                       size = "sm"
