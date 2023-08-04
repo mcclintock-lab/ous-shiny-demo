@@ -2,7 +2,17 @@
 
 
 dashboardPage(
-  dashboardHeader(title = "Ocean Use Survey"),
+  dashboardHeader(title = "Ocean Use Survey",
+                  tags$li(
+                    class = "dropdown",
+                    actionBttn(
+                      inputId = "refresh",
+                      label = NULL,
+                      icon = icon("refresh"),
+                      style = "simple",
+                      size = "sm"
+                    )
+                  )),
   dashboardSidebar(
     sidebarMenu(
       id = "tabs",
@@ -30,8 +40,11 @@ dashboardPage(
   ),
   
   dashboardBody(
-    # STYLING ----
+    # javascript
+    shinyjs::useShinyjs(),
+    shinyjs::extendShinyjs(text = "shinyjs.refresh_page = function() { location.reload(); }", functions = "refresh_page"),
     
+    # STYLING ----
     tags$head(
       tags$link(rel = "stylesheet", type = "text/css", href = "style.css")
     ),

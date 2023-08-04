@@ -87,6 +87,13 @@ html, body {
    
  }
 
+/* ---- header ---- */
+
+#refresh {
+  margin-top: 10px;
+  margin-right: 8px;
+  background-color: #256EA9;
+}
  
  /* ---- overview page ---- */
  

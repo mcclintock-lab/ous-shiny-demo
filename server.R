@@ -4,6 +4,12 @@ print("server")
 
 # Define server logic
 shinyServer(function(input, output) {
+  
+  # refresh app button
+  observeEvent(input$refresh, {
+    shinyjs::js$refresh_page()
+  })
+  
   # info boxes ------------------------------------------------
   
   # latest data update
