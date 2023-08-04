@@ -1,48 +1,18 @@
-
-
-# make response by sector df ----
-make_sector_df <- function(metric) {
-  
-  # metric is selected from a drop down menu in the ui
-  if (metric == "responses") {
-    
-    df <- responses |> 
-      group_by(sector) |> 
-      count() |> 
-      mutate(sector = as.character(sector)) |> 
-      mutate(sector = case_when(sector == "Scientific Research, Technological Development and Environmental Monitoring" ~ "Research, tech and monitoring",
-                                TRUE ~ sector),
-             sector = str_wrap(sector, width = 20),
-             sector = as.factor(sector))
-    
-    return(df)
-    
-  } else if (metric == "represented") {
-    
-    df <- responses |> 
-      group_by(sector) |> 
-      summarize(n = sum(n_rep)) |> 
-      mutate(sector = as.character(sector)) |> 
-      mutate(sector = case_when(sector == "Scientific Research, Technological Development and Environmental Monitoring" ~ "Research, tech and monitoring",
-                                TRUE ~ sector),
-             sector = str_wrap(sector, width = 20),
-             sector = as.factor(sector))
-    
-    
-    return(df)
-  }
-}
-
-
+# create functions for making sector and demographics plots
 
 # make responses by sector plot ----
-make_sector_plot <- function(island_name = NULL, metric, all = FALSE) {
+make_sector_plot <- function(metric, responses) {
   
   if (metric == "represented") {
     
     targets_df <- sector_progress
     
-    df <- make_sector_df(metric = metric) |>
+    df <- responses |> 
+      group_by(sector) |> 
+      summarize(n = sum(n_rep)) |> 
+      mutate(sector = as.character(sector)) |> 
+      mutate(sector = str_wrap(sector, width = 20),
+             sector = as.factor(sector)) |>
       left_join(targets_df)
     
     ggplot(df, aes(x = reorder(sector, n), y = n)) +
@@ -63,12 +33,12 @@ make_sector_plot <- function(island_name = NULL, metric, all = FALSE) {
     
   } else {
     
-    df <- make_sector_df(metric = metric)
-    
-    targets_df <- sector_progress
-    
-    df <- make_sector_df(metric = metric) |>
-      left_join(targets_df)
+    df <- responses |> 
+      group_by(sector) |> 
+      count() |> 
+      mutate(sector = as.character(sector)) |> 
+      mutate(sector = str_wrap(sector, width = 20),
+             sector = as.factor(sector))
     
     ggplot(df, aes(x = reorder(sector, n), y = n)) +
       geom_chicklet(fill = "#2E4052", radius = grid::unit(5, "pt")) +
@@ -87,7 +57,7 @@ make_sector_plot <- function(island_name = NULL, metric, all = FALSE) {
 
 
 # make demographics plot ----
-make_demo_plot <- function(df) {
+make_demo_plot <- function(respondent_info) {
     
     age_resp <- round((1 - nrow(respondent_info |> filter(is.na(age_range))) / nrow(respondent_info)) * 100)
     age_resp_label <- paste0(age_resp, "% reported age")

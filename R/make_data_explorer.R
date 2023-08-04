@@ -2,7 +2,7 @@
 
 
 # table for DT data explorer
-make_datatable <- function() {
+make_datatable <- function(responses) {
   
   # create df with desired columns
   response_table <- responses #|>

@@ -1,11 +1,54 @@
-# shiny server
-
-print("server")
 
 # Define server logic
-shinyServer(function(input, output) {
+shinyServer(function(input, output, session) {
   
-  # refresh app button
+  # reactive file reading ---------------------------------------
+  
+  # responses
+  responses_reader <- reactiveFileReader(
+    intervalMillis = 1.8e3,
+    # check for updates every 30 min
+    session = session,
+    filePath = "data/temp/responses.RDS",
+    readFunc = readRDS
+  )
+  
+  responses <- reactive(responses_reader())
+  
+  # respondent_info
+  respondent_info_reader <- reactiveFileReader(
+    intervalMillis = 1.8e3,
+    session = session,
+    filePath = "data/temp/respondent_info.RDS",
+    readFunc = readRDS
+  )
+  
+  respondent_info <- reactive(respondent_info_reader())
+  
+  # shapes
+  shapes_reader <- reactiveFileReader(
+    intervalMillis = 1.8e3,
+    session = session,
+    filePath = "data/temp/shapes.RDS",
+    readFunc = readRDS
+  )
+  
+  shapes <- reactive(shapes_reader())
+  
+  # data update datetime
+  data_update_reader <- reactiveFileReader(
+    intervalMillis = 1.8e3,
+    session = session,
+    filePath = "data/temp/data_update.txt",
+    readFunc = readLines
+  )
+  
+  data_update <- reactive(
+    data_update_reader() |>
+      as_datetime(tz = "America/Los_Angeles")
+  )
+  
+  # refresh app button ----
   observeEvent(input$refresh, {
     shinyjs::js$refresh_page()
   })
@@ -14,13 +57,13 @@ shinyServer(function(input, output) {
   
   # latest data update
   output$latest_data <- renderUI({
-    HTML(paste0("Data updated", br(), "<b>", data_update, "</b>"))
+    HTML(paste0("Data updated", br(), "<b>", data_update(), "</b>"))
   })
   
   # number respondents box
   output$num_respondents <- renderValueBox({
     valueBox(
-      nrow(respondent_info),
+      nrow(respondent_info()),
       HTML(paste0("Individual", br(), "Respondents")),
       icon = icon("user", class = "fa-solid fa-user"),
       color = "blue"
@@ -30,7 +73,7 @@ shinyServer(function(input, output) {
   # number represented box
   output$num_rep <- renderValueBox({
     valueBox(
-      sum(respondent_info$max_rep),
+      sum(respondent_info()$max_rep),
       HTML(paste0("Individuals", br(), "Represented")),
       icon = icon("users"),
       color = "aqua"
@@ -39,7 +82,7 @@ shinyServer(function(input, output) {
   
   # sector responses box
   output$sec_resp <- renderValueBox({
-    valueBox(nrow(responses),
+    valueBox(nrow(responses()),
              HTML(paste0("Sector", br(), "Responses")),
              icon = icon("water"),
              color = "teal")
@@ -51,14 +94,14 @@ shinyServer(function(input, output) {
   # targets table
   
   output$target_table <- renderDataTable({
-    make_target_table()
+    make_target_table(responses = responses())
     
   })
   
   # demographic plot ---------------------
   
   output$demo_plot <- renderPlot({
-    make_demo_plot(df = respondent_info)
+    make_demo_plot(respondent_info = respondent_info())
     
   })
   
@@ -69,7 +112,8 @@ shinyServer(function(input, output) {
   resp_plot_metric("represented")
   
   output$resp_plot <- renderPlot({
-    make_sector_plot(metric = resp_plot_metric())
+    make_sector_plot(metric = resp_plot_metric(),
+                     responses = responses())
     
   })
   
@@ -89,7 +133,7 @@ shinyServer(function(input, output) {
   
   # datatable ----------------------------------------------
   
-  output$datatable <- renderDataTable(expr = make_datatable(),
+  output$datatable <- renderDataTable(expr = make_datatable(responses = responses()),
                                       server = FALSE) # needed to use plugins
   
   observeEvent(input$dt_view_shapes, {
@@ -123,6 +167,8 @@ shinyServer(function(input, output) {
   # Shape viewer -------------------------------------------------
   
   output$map <- renderLeaflet({
+    shapes <- shapes()
+    
     if (input$filter_id == TRUE) {
       # parse user input for filter by response_id
       shape_id <-
@@ -252,7 +298,9 @@ shinyServer(function(input, output) {
   # reporting -----------------------------
   
   output$reporting_totals_table <- renderDataTable(
-    make_reporting_totals_table(),
+    make_reporting_totals_table(responses = responses(),
+                                respondent_info = respondent_info(),
+                                shapes = shapes()),
     server = FALSE,
     options = list(
       pageLength = 100,
@@ -263,7 +311,9 @@ shinyServer(function(input, output) {
   )
   
   output$reporting_by_sector_table <- renderDataTable(
-    make_reporting_sector_table(),
+    make_reporting_sector_table(responses = responses(),
+                                respondent_info = respondent_info(),
+                                shapes = shapes()),
     server = FALSE,
     options = list(
       pageLength = 100,

@@ -6,7 +6,7 @@ region_label <- "region"
 
 # totals ----
 
-make_reporting_totals_table <- function() {
+make_reporting_totals_table <- function(responses, respondent_info, shapes) {
   
   # individual respondents and individuals represented
   n_resp_rep <- respondent_info |>
@@ -60,7 +60,7 @@ make_reporting_totals_table <- function() {
 
 # by sector ----
 
-make_reporting_sector_table <- function() {
+make_reporting_sector_table <- function(responses, respondent_info, shapes) {
   
   # sector responses and individuals represented
   n_resp_rep <- responses |>
