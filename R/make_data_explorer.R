@@ -20,7 +20,7 @@ make_datatable <- function(responses) {
   #                                  str_to_title(colnames(response_table)))
   
   # output datatable object
-  datatable(response_table,
+  table = datatable(response_table,
             filter = list(position = "top"),
             plugins = "accent-neutralise",
             options = list(
@@ -28,6 +28,8 @@ make_datatable <- function(responses) {
               scrollX = TRUE,
               scroller = TRUE,
               lengthChange = FALSE))
+  
+  return(table)
 }
 
 # table of exact duplicate responses 

@@ -145,7 +145,7 @@ shinyServer(function(input, output, session) {
       updateTabItems(inputId = "tabs", selected = "shapes")
       
       selected_row <- input$datatable_rows_selected
-      selected_id <- unique(responses$response_id[selected_row])
+      selected_id <- unique(responses()$response_id[selected_row])
       
       print(selected_row)
       
@@ -167,6 +167,7 @@ shinyServer(function(input, output, session) {
   # Shape viewer -------------------------------------------------
   
   output$map <- renderLeaflet({
+    # 
     shapes <- shapes()
     
     if (input$filter_id == TRUE) {
