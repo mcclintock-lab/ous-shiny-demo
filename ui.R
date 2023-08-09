@@ -5,6 +5,11 @@ dashboardPage(
   dashboardHeader(title = "Ocean Use Survey",
                   tags$li(
                     class = "dropdown",
+                    id = "disclaimer",
+                    "*This app contains randomly generated data solely for demonstration purposes"
+                  ),
+                  tags$li(
+                    class = "dropdown",
                     actionBttn(
                       inputId = "refresh",
                       label = "Refresh App",
