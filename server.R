@@ -288,7 +288,7 @@ shinyServer(function(input, output, session) {
   # export shapes handler
   output$download_filtered_shapes <- downloadHandler(
     filename = function() {
-      paste0(project, "_ous_shapes_", data_update_ymd, ".fgb")
+      paste0(project, "_ous_shapes_", data_update_ymd, ".geojson")
     },
     content = function(file) {
       write_sf(filtered_shapes(), file)
