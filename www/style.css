@@ -95,6 +95,18 @@ html, body {
   margin-right: 20px;
 }
 
+#generate-data-link {
+  background: transparent;
+  text-decoration: underline;
+  margin: 0px;
+  padding: 0px;
+  display:inline-block;
+}
+
+#generate-data-link:hover {
+  color: #39CCCC;
+}
+
 #refresh {
   margin-top: 10px;
   margin-right: 8px;

@@ -7,7 +7,9 @@ dashboardPage(
     tags$li(
       class = "dropdown",
       id = "disclaimer",
-      "*This app contains randomly generated data solely for demonstration purposes"
+      HTML(
+        "*This app contains <a id=generate-data-link target=_blank href='https://github.com/mcclintock-lab/ous-shiny-demo/blob/main/R/generate_data.R'>randomly generated data</a> solely for demonstration purposes"
+      )
     ),
     tags$li(
       class = "dropdown",
