@@ -1,7 +1,8 @@
 
+
+
 # Define server logic
 shinyServer(function(input, output, session) {
-  
   # reactive file reading ---------------------------------------
   
   # responses
@@ -43,10 +44,8 @@ shinyServer(function(input, output, session) {
     readFunc = readLines
   )
   
-  data_update <- reactive(
-    data_update_reader() |>
-      as_datetime(tz = "America/Los_Angeles")
-  )
+  data_update <- reactive(data_update_reader() |>
+                            as_datetime(tz = "America/Los_Angeles"))
   
   # refresh app button ----
   observeEvent(input$refresh, {
@@ -91,10 +90,40 @@ shinyServer(function(input, output, session) {
   
   # targets ------------------------------------------------
   
-  # targets table
-  
+  # target table
   output$target_table <- renderDataTable({
     make_target_table(responses = responses())
+    
+  })
+  
+  # allow writing target changes to local csv
+  
+  # make target_table_state object reactive so the save_targets event can access the current changes
+  target_table_state <- reactiveVal()
+  target_table_state(targets)
+  
+  # listen for user edits to table and update target_table_state accordingly
+  observeEvent(input$target_table_cell_edit, {
+    changed_row <- input$target_table_cell_edit$row
+    changed_val <- input$target_table_cell_edit$value
+    changed_val <- ifelse(changed_val == "", NA, changed_val)
+    changed_target <- targets_progress[[changed_row, "metric"]] |>
+      snakecase::to_snake_case()
+    
+    changed_target_table <- target_table_state()
+    
+    changed_target_table[changed_target_table$metric == changed_target,]$target <-
+      changed_val
+    
+    # save table state to global object
+    assign("changed_target_table", changed_target_table, envir = .GlobalEnv)
+    
+  })
+  
+  # save_targets listener - overwrite source targets
+  observeEvent(input$save_targets, {
+
+    write_csv(changed_target_table, "data/demo_survey_targets.csv")
     
   })
   
@@ -133,8 +162,9 @@ shinyServer(function(input, output, session) {
   
   # datatable ----------------------------------------------
   
-  output$datatable <- renderDataTable(expr = make_datatable(responses = responses()),
-                                      server = FALSE) # needed to use plugins
+  output$datatable <-
+    renderDataTable(expr = make_datatable(responses = responses()),
+                    server = FALSE) # needed to use plugins
   
   observeEvent(input$dt_view_shapes, {
     if (is.null(input$datatable_rows_selected)) {
@@ -167,7 +197,7 @@ shinyServer(function(input, output, session) {
   # Shape viewer -------------------------------------------------
   
   output$map <- renderLeaflet({
-    # 
+    #
     shapes <- shapes()
     
     if (input$filter_id == TRUE) {
@@ -299,9 +329,11 @@ shinyServer(function(input, output, session) {
   # reporting -----------------------------
   
   output$reporting_totals_table <- renderDataTable(
-    make_reporting_totals_table(responses = responses(),
-                                respondent_info = respondent_info(),
-                                shapes = shapes()),
+    make_reporting_totals_table(
+      responses = responses(),
+      respondent_info = respondent_info(),
+      shapes = shapes()
+    ),
     server = FALSE,
     options = list(
       pageLength = 100,
@@ -312,9 +344,11 @@ shinyServer(function(input, output, session) {
   )
   
   output$reporting_by_sector_table <- renderDataTable(
-    make_reporting_sector_table(responses = responses(),
-                                respondent_info = respondent_info(),
-                                shapes = shapes()),
+    make_reporting_sector_table(
+      responses = responses(),
+      respondent_info = respondent_info(),
+      shapes = shapes()
+    ),
     server = FALSE,
     options = list(
       pageLength = 100,
@@ -354,6 +388,4 @@ shinyServer(function(input, output, session) {
       write_csv(data_report_sector(), file)
     }
   )
-  
-  
 })

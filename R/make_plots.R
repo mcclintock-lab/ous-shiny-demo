@@ -5,7 +5,7 @@ make_sector_plot <- function(metric, responses) {
   
   if (metric == "represented") {
     
-    targets_df <- sector_progress
+    targets_df <- sector_targets
     
     df <- responses |> 
       group_by(sector) |> 

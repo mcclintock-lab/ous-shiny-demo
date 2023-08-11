@@ -1,8 +1,8 @@
 
+targets <- read_csv("data/demo_survey_targets.csv")
 
 # make target table function to be called in server
 make_target_table <- function(responses) {
-  targets <- read_csv("data/demo_survey_targets.csv")
   
   rec_fishing <- responses |>
     filter(sector == "Recreational fishing") |>
@@ -110,7 +110,7 @@ make_target_table <- function(responses) {
     full_join(progress)
   
   # save separate progress table to global env for use in sector plot
-  sector_progress <- targets_progress |>
+  sector_targets <- targets_progress |>
     filter(str_detect(metric, "sector")) |>
     mutate(
       sector = case_when(
@@ -123,7 +123,7 @@ make_target_table <- function(responses) {
     ) |>
     select(sector, target)
   
-  assign("sector_progress", sector_progress, envir = .GlobalEnv)
+  assign("sector_targets", sector_targets, envir = .GlobalEnv)
   
   
   targets_progress <- targets_progress |>
@@ -137,7 +137,7 @@ make_target_table <- function(responses) {
       metric = str_replace_all(metric, "_", " "),
       metric = str_to_title(metric),
       metric = str_replace(metric, " And ", " and ")
-    ) #|>
+    )
   
   # make sure all island/metric combos are represented
   targets_progress <- complete(targets_progress, metric) |>
@@ -148,6 +148,8 @@ make_target_table <- function(responses) {
       represented = ifelse(is.na(represented) &
                              metric != "Vessels", 0, represented)
     )
+  
+  assign("targets_progress", targets_progress, envir = .GlobalEnv)
   
   # red-ylw-grn color ramp styling for target progress
   breaks <- seq(0, 1, 0.01)
@@ -164,6 +166,8 @@ make_target_table <- function(responses) {
         "Individuals represented",
         "Percent achieved"
       ),
+      editable = TRUE,
+      selection = "none",
       options = list(
         lengthChange = FALSE,
         dom = "t",

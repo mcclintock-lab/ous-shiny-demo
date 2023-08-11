@@ -2,22 +2,24 @@
 
 
 dashboardPage(
-  dashboardHeader(title = "Ocean Use Survey",
-                  tags$li(
-                    class = "dropdown",
-                    id = "disclaimer",
-                    "*This app contains randomly generated data solely for demonstration purposes"
-                  ),
-                  tags$li(
-                    class = "dropdown",
-                    actionBttn(
-                      inputId = "refresh",
-                      label = "Refresh App",
-                      icon = icon("refresh"),
-                      style = "simple",
-                      size = "sm"
-                    )
-                  )),
+  dashboardHeader(
+    title = "Ocean Use Survey",
+    tags$li(
+      class = "dropdown",
+      id = "disclaimer",
+      "*This app contains randomly generated data solely for demonstration purposes"
+    ),
+    tags$li(
+      class = "dropdown",
+      actionBttn(
+        inputId = "refresh",
+        label = "Refresh App",
+        icon = icon("refresh"),
+        style = "simple",
+        size = "sm"
+      )
+    )
+  ),
   dashboardSidebar(
     sidebarMenu(
       id = "tabs",
@@ -60,7 +62,7 @@ dashboardPage(
       tabItem(
         tabName = "overview",
         
-        # totals and responses by sector --------------------------------
+        # value boxes --------------------------------
         fluidRow(
           width = "100%",
           
@@ -112,7 +114,7 @@ dashboardPage(
             )
           ),
           
-          # target table
+          # target table ----
           div(
             id = "target-box",
             class = "col-sm-12 col-md-12 col-lg-12",
@@ -122,6 +124,9 @@ dashboardPage(
               width = 12,
               align = "center",
               collapsible = TRUE,
+              dropdownMenu = shinydashboardPlus::boxDropdown(
+                shinydashboardPlus::boxDropdownItem("Save target changes", id = "save_targets")
+              ),
               
               dataTableOutput("target_table") |>
                 withSpinner(type = 8)
