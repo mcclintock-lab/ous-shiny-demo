@@ -44,16 +44,6 @@ make_target_table <- function(responses) {
       metric = "recreation_sports_and_tourism_sector"
     )
   
-  sci_tech <- responses |>
-    filter(
-      sector == "Scientific Research, Technological Development and Environmental Monitoring"
-    ) |>
-    summarize(
-      individuals = n(),
-      represented = sum(n_rep),
-      metric = "science_tech_and_monitoring_sector"
-    )
-  
   aquaculture <- responses |>
     filter(sector == "Aquaculture") |>
     summarize(
@@ -116,7 +106,6 @@ make_target_table <- function(responses) {
       population,
       research,
       rec_sports,
-      sci_tech,
       aquaculture,
       sec_def,
       energy_dev,
