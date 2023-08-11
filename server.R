@@ -6,7 +6,7 @@ shinyServer(function(input, output, session) {
   
   # responses
   responses_reader <- reactiveFileReader(
-    intervalMillis = 1.8e3,
+    intervalMillis = 1.8e6,
     # check for updates every 30 min
     session = session,
     filePath = "data/temp/responses.RDS",
@@ -17,7 +17,7 @@ shinyServer(function(input, output, session) {
   
   # respondent_info
   respondent_info_reader <- reactiveFileReader(
-    intervalMillis = 1.8e3,
+    intervalMillis = 1.8e6,
     session = session,
     filePath = "data/temp/respondent_info.RDS",
     readFunc = readRDS
@@ -27,7 +27,7 @@ shinyServer(function(input, output, session) {
   
   # shapes
   shapes_reader <- reactiveFileReader(
-    intervalMillis = 1.8e3,
+    intervalMillis = 1.8e6,
     session = session,
     filePath = "data/temp/shapes.RDS",
     readFunc = readRDS
