@@ -1,9 +1,9 @@
 
+
 targets <- read_csv("data/demo_survey_targets.csv")
 
 # make target table function to be called in server
 make_target_table <- function(responses) {
-  
   rec_fishing <- responses |>
     filter(sector == "Recreational fishing") |>
     summarize(
@@ -28,16 +28,16 @@ make_target_table <- function(responses) {
       metric = "touristic_fishing_sector"
     )
   
-  uw_cultural <- responses |>
-    filter(sector == "Underwater cultural heritage") |>
+  research <- responses |>
+    filter(sector == "Research") |>
     summarize(
       individuals = n(),
       represented = sum(n_rep),
-      metric = "underwater_cultural_heritage_sector"
+      metric = "research_sector"
     )
   
   rec_sports <- responses |>
-    filter(sector == "Recreation, sports and tourism") |>
+    filter(sector == "Recreation, sports, and tourism") |>
     summarize(
       individuals = n(),
       represented = sum(n_rep),
@@ -62,12 +62,28 @@ make_target_table <- function(responses) {
       metric = "aquaculture_sector"
     )
   
+  mar_bio <- responses |>
+    filter(sector == "Marine biotechnology") |>
+    summarize(
+      individuals = n(),
+      represented = sum(n_rep),
+      metric = "marine_biotechnology_sector"
+    )
+  
   sec_def <- responses |>
     filter(sector == "Security and defense") |>
     summarize(
       individuals = n(),
       represented = sum(n_rep),
       metric = "security_and_defense_sector"
+    )
+  
+  energy_dev <- responses |>
+    filter(sector == "Energy development") |>
+    summarize(
+      individuals = n(),
+      represented = sum(n_rep),
+      metric = "energy_development_sector"
     )
   
   vessels <- responses |>
@@ -98,11 +114,13 @@ make_target_table <- function(responses) {
       tour_fishing,
       vessels,
       population,
-      uw_cultural,
+      research,
       rec_sports,
       sci_tech,
       aquaculture,
-      sec_def
+      sec_def,
+      energy_dev,
+      mar_bio
     )
   )
   
@@ -113,12 +131,14 @@ make_target_table <- function(responses) {
   sector_targets <- targets_progress |>
     filter(str_detect(metric, "sector")) |>
     mutate(
+      # sector names are formatted to join with responses
       sector = case_when(
-        metric == "commercial_fishing_sector" ~ "Commercial fishing",
-        metric == "touristic_fishing_sector" ~ "Touristic fishing",
-        metric == "recreational_fishing_sector" ~ "Recreational fishing",
-        metric == "rec_sports_sector" ~ "Recreation, sports, and tourism",
-        metric == "sci_tech_sector" ~ "Science, tech, and monitoring"
+        metric == "recreation_sports_and_tourism_sector" ~ "Recreation, sports, and tourism",
+        metric == "science_tech_and_monitoring_sector" ~ "Science, tech, and monitoring",
+        TRUE ~  
+          str_replace_all(metric, "_", " ") |> 
+          str_remove(" sector") |>
+          to_sentence_case()
       )
     ) |>
     select(sector, target)
@@ -171,7 +191,7 @@ make_target_table <- function(responses) {
       options = list(
         lengthChange = FALSE,
         dom = "t",
-        pageLength = nrow(df),
+        pageLength = nrow(targets_progress),
         columnDefs = list(list(
           className = 'dt-center', targets = 2:5
         ))

@@ -1,6 +1,7 @@
 
 
 
+
 # Define server logic
 shinyServer(function(input, output, session) {
   # reactive file reading ---------------------------------------
@@ -109,10 +110,10 @@ shinyServer(function(input, output, session) {
     changed_val <- ifelse(changed_val == "", NA, changed_val)
     changed_target <- targets_progress[[changed_row, "metric"]] |>
       snakecase::to_snake_case()
-    
+    print(changed_val)
     changed_target_table <- target_table_state()
     
-    changed_target_table[changed_target_table$metric == changed_target,]$target <-
+    changed_target_table[changed_target_table$metric == changed_target, ]$target <-
       changed_val
     
     # save table state to global object
@@ -122,8 +123,24 @@ shinyServer(function(input, output, session) {
   
   # save_targets listener - overwrite source targets
   observeEvent(input$save_targets, {
-
     write_csv(changed_target_table, "data/demo_survey_targets.csv")
+    
+    assign("targets",
+           read_csv("data/demo_survey_targets.csv"),
+           envir = .GlobalEnv)
+    
+    # rerender table on save
+    output$target_table <- renderDataTable({
+      make_target_table(responses = responses())
+      
+    })
+    
+    # rerender sector plot because it has target bars
+    output$resp_plot <- renderPlot({
+      make_sector_plot(metric = resp_plot_metric(),
+                       responses = responses())
+      
+    })
     
   })
   

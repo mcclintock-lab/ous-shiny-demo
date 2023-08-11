@@ -28,8 +28,8 @@ age_options <- c("18-27", "28-37", "38-47", "48-57", "58-67", "68-77", "78+")
 age_ranges <- sample(age_options, n_resp, prob = c(.05, .15, .175, .25, .175, .15, .05), replace=TRUE)
 
 # gen random sectors with potential for up to three per respondent
-sector_options <- c("Aquaculture", "Commercial fishing", "Energy Development",
-                    "Marine Biotechnology", "Recreation, sports, and tourism",
+sector_options <- c("Aquaculture", "Commercial fishing", "Energy development",
+                    "Marine biotechnology", "Recreation, sports, and tourism",
                     "Recreational fishing", "Research", "Security and defense",
                     "Touristic fishing")
 
