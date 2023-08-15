@@ -207,7 +207,11 @@ html, body {
    max-width: 1400px !important;
  }
  
- 
+   #submit_correction {
+   background-color: #2B7EC2;
+   color: white;
+   float: right;
+ }
  
  
  /* ---- shape viewer page ---- */

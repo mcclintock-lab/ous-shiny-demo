@@ -204,11 +204,33 @@ shinyServer(function(input, output, session) {
     
   })
   
+  # data corrections
+  
+  corrections <- read_rds("data/corrections.RDS")
+  
+  output$corrections_table <-
+    renderDataTable(make_corrections_table(corrections))
+  
+  observeEvent(input$submit_correction, {
+    new_entry <- data.frame(
+      response_id = input$corrections_response_id,
+      correction = input$corrections_text
+    )
+    corrections <- bind_rows(list(corrections, new_entry))
+    
+    print(corrections)
+    
+    output$corrections_table <-
+      renderDataTable(make_corrections_table(corrections))
+    
+    write_rds(corrections, "data/corrections.RDS")
+    
+  })
+  
   output$n_dups <- renderText(nrow("n_dups"))
   outputOptions(output, "n_dups", suspendWhenHidden = FALSE)
   
   output$dup_table <- renderDataTable(make_dups_table())
-  
   
   
   # Shape viewer -------------------------------------------------

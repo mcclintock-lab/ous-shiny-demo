@@ -58,6 +58,23 @@ make_dups_table <- function() {
   
 }
 
+# data corrections table
+make_corrections_table <- function(corrections) {
+  table <- datatable(
+    corrections,
+    colnames = c("Response ID", "Correction"),
+    options = list(
+      lengthChange = FALSE,
+      dom = "t",
+      columnDefs = list(list(
+        className = 'dt-center', targets = 1
+      ))
+    )
+  )
+  
+  return(table)
+}
+
 
 
 

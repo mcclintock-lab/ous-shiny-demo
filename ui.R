@@ -206,6 +206,33 @@ dashboardPage(
                           withSpinner(type = 8)
                         
                       ),
+                      
+                      # corrections tab
+                      tabPanel(
+                        title = "Corrections",
+                        
+                        actionBttn(
+                          "submit_correction",
+                          "Submit Correction",
+                          style = "jelly",
+                          size = "sm",
+                          icon = icon("save")
+                        ),
+                        
+                        tags$br(),
+                        tags$br(),
+                        
+                        numericInput("corrections_response_id", "Response ID", NA),
+                        textAreaInput("corrections_text", "Corrections to be made"),
+                        
+                        shinydashboardPlus::box(
+                          width = 12,
+                          
+                          dataTableOutput("corrections_table") |>
+                            withSpinner(type = 8)
+                        )
+                      ), 
+                      
                       # duplicates tab - only displays table if dups exist
                       tabPanel(
                         title = "Duplicates",
@@ -215,8 +242,6 @@ dashboardPage(
                                          HTML(
                                            paste0(br(), "No duplicate responses found")
                                          ))
-                        
-                        
                       )
                     )
                   ))),
