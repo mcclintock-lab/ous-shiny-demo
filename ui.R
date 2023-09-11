@@ -1,7 +1,6 @@
 # shiny ui
 
-
-dashboardPage(
+ui <- (dashboardPage(
   dashboardHeader(
     title = "Ocean Use Survey",
     tags$li(
@@ -358,4 +357,7 @@ dashboardPage(
       )
     )
   )
-)
+))
+
+# secure app with shinymanager
+ui <- secure_app(ui, enable_admin = TRUE)

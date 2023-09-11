@@ -1,9 +1,20 @@
-
-
-
-
 # Define server logic
+
 shinyServer(function(input, output, session) {
+  # user auth --------------------------------
+  
+  # check_credentials() returns a function that takes username and password and returns list of user attributes
+  res_auth <-
+    secure_server(check_credentials = check_credentials("auth/users.sqlite",
+                                                        passphrase = "theoceanissupercool"))
+  
+  # output list of user auth attributes
+  output$auth_output <- renderPrint({
+    reactiveValuesToList(res_auth)
+  })
+  
+  
+  
   # reactive file reading ---------------------------------------
   
   # responses
