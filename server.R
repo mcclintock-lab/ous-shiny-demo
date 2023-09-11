@@ -3,16 +3,23 @@
 shinyServer(function(input, output, session) {
   # user auth --------------------------------
   
+  # read in db passphrase
+  passphrase_file <- "auth/passphrase.txt"
+  passphrase <- readChar(passphrase_file, file.info(passphrase_file)$size)
+  
   # check_credentials() returns a function that takes username and password and returns list of user attributes
   res_auth <-
     secure_server(check_credentials = check_credentials("auth/users.sqlite",
-                                                        passphrase = "theoceanissupercool"))
+                                                        passphrase = passphrase))
   
   # output list of user auth attributes
   output$auth_output <- renderPrint({
     reactiveValuesToList(res_auth)
   })
   
+  observe({
+    admin_status <- reactiveValuesToList(res_auth)$admin
+  })
   
   
   # reactive file reading ---------------------------------------
@@ -143,7 +150,6 @@ shinyServer(function(input, output, session) {
     # rerender table on save
     output$target_table <- renderDataTable({
       make_target_table(responses = responses())
-      
     })
     
     # rerender sector plot because it has target bars
