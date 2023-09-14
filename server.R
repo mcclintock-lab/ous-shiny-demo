@@ -1,9 +1,27 @@
-
-
-
-
 # Define server logic
+
 shinyServer(function(input, output, session) {
+  # user auth --------------------------------
+  
+  # read in db passphrase
+  passphrase_file <- "auth/passphrase.txt"
+  passphrase <- readChar(passphrase_file, file.info(passphrase_file)$size)
+  
+  # check_credentials() returns a function that takes username and password and returns list of user attributes
+  res_auth <-
+    secure_server(check_credentials = check_credentials("auth/users.sqlite",
+                                                        passphrase = passphrase))
+  
+  # Create reactive admin status to determine privileges
+  admin_status <- reactive({
+    reactiveValuesToList(res_auth)$admin
+  })
+  
+  # Create reactive admin status to determine privileges
+  write_status <- reactive({
+    reactiveValuesToList(res_auth)$write
+  })
+  
   # reactive file reading ---------------------------------------
   
   # responses
@@ -94,55 +112,58 @@ shinyServer(function(input, output, session) {
   # target table
   output$target_table <- renderDataTable({
     make_target_table(responses = responses())
-    
   })
   
-  # allow writing target changes to local csv
-  
-  # make target_table_state object reactive so the save_targets event can access the current changes
-  target_table_state <- reactiveVal()
-  target_table_state(targets)
-  
-  # listen for user edits to table and update target_table_state accordingly
-  observeEvent(input$target_table_cell_edit, {
-    changed_row <- input$target_table_cell_edit$row
-    changed_val <- input$target_table_cell_edit$value
-    changed_val <- ifelse(changed_val == "", NA, changed_val)
-    changed_target <- targets_progress[[changed_row, "metric"]] |>
-      snakecase::to_snake_case()
-    print(changed_val)
-    changed_target_table <- target_table_state()
-    
-    changed_target_table[changed_target_table$metric == changed_target, ]$target <-
-      changed_val
-    
-    # save table state to global object
-    assign("changed_target_table", changed_target_table, envir = .GlobalEnv)
-    
-  })
-  
-  # save_targets listener - overwrite source targets
-  observeEvent(input$save_targets, {
-    write_csv(changed_target_table, "data/demo_survey_targets.csv")
-    
-    assign("targets",
-           read_csv("data/demo_survey_targets.csv"),
-           envir = .GlobalEnv)
-    
-    # rerender table on save
-    output$target_table <- renderDataTable({
-      make_target_table(responses = responses())
+  # admin only - allow writing target changes to local csv
+  observe({
+    if (!is.null(write_status()) && write_status() == TRUE) {
       
-    })
-    
-    # rerender sector plot because it has target bars
-    output$resp_plot <- renderPlot({
-      make_sector_plot(metric = resp_plot_metric(),
-                       responses = responses())
+      # make target_table_state object reactive so the save_targets event can access the current changes
+      target_table_state <- reactiveVal()
+      target_table_state(targets)
       
-    })
-    
+      # listen for user edits to table and update target_table_state accordingly
+      observeEvent(input$target_table_cell_edit, {
+        changed_row <- input$target_table_cell_edit$row
+        changed_val <- input$target_table_cell_edit$value
+        changed_val <- ifelse(changed_val == "", NA, changed_val)
+        changed_target <- targets_progress[[changed_row, "metric"]] |>
+          snakecase::to_snake_case()
+        print(changed_val)
+        changed_target_table <- target_table_state()
+        
+        changed_target_table[changed_target_table$metric == changed_target, ]$target <-
+          changed_val
+        
+        # save table state to global object
+        assign("changed_target_table", changed_target_table, envir = .GlobalEnv)
+        
+      })
+      
+      # save_targets listener - overwrite source targets
+      observeEvent(input$save_targets, {
+        write_csv(changed_target_table, "data/demo_survey_targets.csv")
+        
+        assign("targets",
+               read_csv("data/demo_survey_targets.csv"),
+               envir = .GlobalEnv)
+        
+        # rerender table on save
+        output$target_table <- renderDataTable({
+          make_target_table(responses = responses())
+        })
+        
+        # rerender sector plot because it has target bars
+        output$resp_plot <- renderPlot({
+          make_sector_plot(metric = resp_plot_metric(),
+                           responses = responses())
+          
+        })
+        
+      })
+    }
   })
+  
   
   # demographic plot ---------------------
   
