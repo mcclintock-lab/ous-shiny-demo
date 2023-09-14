@@ -360,4 +360,8 @@ ui <- (dashboardPage(
 ))
 
 # secure app with shinymanager
-ui <- secure_app(ui, enable_admin = TRUE)
+if (secure == TRUE) {
+  ui <- secure_app(ui, enable_admin = TRUE)
+} else {
+  ui <- ui
+}

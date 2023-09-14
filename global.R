@@ -16,6 +16,8 @@ library(ggchicklet)
 library(snakecase)
 library(lubridate)
 
+secure <- T
+
 project <- "demo"
 
 # identifies date of latest data files and removes old ones
