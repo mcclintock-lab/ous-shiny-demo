@@ -207,12 +207,18 @@ html, body {
    max-width: 1400px !important;
  }
  
-   #submit_correction {
+  #submit_correction {
+   margin-top: 10px;
+   margin-right: 10px;
    background-color: #2B7EC2;
    color: white;
-   float: right;
  }
  
+  #mark_fixed {
+   margin-top: 10px !important;
+   background-color: #2B7EC2;
+   color: white;
+ }
  
  /* ---- shape viewer page ---- */
  #map {

@@ -63,7 +63,7 @@ ui <- (dashboardPage(
       tabItem(
         tabName = "overview",
         
-        # value boxes --------------------------------
+        ## value boxes ----
         fluidRow(
           width = "100%",
           
@@ -115,7 +115,7 @@ ui <- (dashboardPage(
             )
           ),
           
-          # target table ----
+          ## target table ----
           div(
             id = "target-box",
             class = "col-sm-12 col-md-12 col-lg-12",
@@ -138,7 +138,7 @@ ui <- (dashboardPage(
         
         
         
-        # plots --------------------------------------------------------
+        ## plots ----
         
         div(id = "plots-row",
             fluidRow(
@@ -184,6 +184,7 @@ ui <- (dashboardPage(
       # DATA TABLE ----------------------------------------------------------
       tabItem(tabName = "explore",
               
+              ## main tab ----
               div(id = "dt-box",
                   box(
                     width = "100%",
@@ -206,7 +207,7 @@ ui <- (dashboardPage(
                         
                       ),
                       
-                      # corrections tab
+                      ## corrections ----
                       tabPanel(
                         title = "Corrections",
                         
@@ -215,33 +216,46 @@ ui <- (dashboardPage(
                           "Submit Correction",
                           style = "jelly",
                           size = "sm",
-                          icon = icon("save")
+                          icon = icon("upload")
+                        ),
+                        
+                        actionBttn(
+                          "mark_fixed",
+                          "Mark / Unmark as Fixed",
+                          style = "jelly",
+                          size = "sm",
+                          icon = icon("check")
                         ),
                         
                         tags$br(),
                         tags$br(),
+                        tags$br(),
                         
-                        numericInput("corrections_response_id", "Response ID", NA),
-                        textAreaInput("corrections_text", "Corrections to be made"),
+                        numericInput("corrections_response_id", "Response ID", NA,
+                                     width = "25%"),
+                        textAreaInput("corrections_text",
+                                      "Corrections to be made",
+                                      resize = "vertical"), 
+                        tags$br(),
+                        tags$br(),
                         
                         shinydashboardPlus::box(
                           width = 12,
                           
-                          dataTableOutput("corrections_table") |>
-                            withSpinner(type = 8)
+                          dataTableOutput("corrections_table")
                         )
                       ), 
                       
-                      # duplicates tab - only displays table if dups exist
-                      tabPanel(
-                        title = "Duplicates",
-                        conditionalPanel(condition = "output.n_dups!='0'",
-                                         dataTableOutput("dup_table", width = "50%")),
-                        conditionalPanel(condition = "output.n_dups=='0'",
-                                         HTML(
-                                           paste0(br(), "No duplicate responses found")
-                                         ))
-                      )
+                      ## duplicates ----
+                      # tabPanel(
+                      #   title = "Duplicates",
+                      #   conditionalPanel(condition = "output.n_dups!='0'",
+                      #                    dataTableOutput("dup_table", width = "50%")),
+                      #   conditionalPanel(condition = "output.n_dups=='0'",
+                      #                    HTML(
+                      #                      paste0(br(), "No duplicate responses found")
+                      #                    ))
+                      # )
                     )
                   ))),
       

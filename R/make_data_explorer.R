@@ -5,7 +5,7 @@
 make_datatable <- function(responses) {
   
   # create df with desired columns
-  response_table <- responses #|>
+  response_table <- respondent_info #|>
   #   select(
   #     date, time, response_id, name, facilitator_name, account_email,
   #     sector, gender, contains("born"), n_rep, opt_in) |> 
@@ -23,6 +23,7 @@ make_datatable <- function(responses) {
   table = datatable(response_table,
             filter = list(position = "top"),
             plugins = "accent-neutralise",
+            editable = TRUE,
             options = list(
               pageLength = 50,
               scrollX = TRUE,
@@ -62,7 +63,8 @@ make_dups_table <- function() {
 make_corrections_table <- function(corrections) {
   table <- datatable(
     corrections,
-    colnames = c("Response ID", "Correction"),
+    colnames = c("Response ID", "Correction", "User", "Date", "Fixed"),
+    escape = FALSE,
     options = list(
       lengthChange = FALSE,
       dom = "t",

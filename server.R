@@ -17,9 +17,18 @@ shinyServer(function(input, output, session) {
     reactiveValuesToList(res_auth)$admin
   })
   
-  # Create reactive admin status to determine privileges
+  # write privileges if not admin
   write_status <- reactive({
     reactiveValuesToList(res_auth)$write
+  })
+  
+  # current user
+  current_user <- reactive({
+    reactiveValuesToList(res_auth)$user
+  })
+  
+  observe({
+    print(current_user())
   })
   
   # reactive file reading ---------------------------------------
@@ -129,7 +138,7 @@ shinyServer(function(input, output, session) {
         changed_val <- ifelse(changed_val == "", NA, changed_val)
         changed_target <- targets_progress[[changed_row, "metric"]] |>
           snakecase::to_snake_case()
-        print(changed_val)
+
         changed_target_table <- target_table_state()
         
         changed_target_table[changed_target_table$metric == changed_target, ]$target <-
@@ -198,8 +207,9 @@ shinyServer(function(input, output, session) {
   })
   
   
-  # datatable ----------------------------------------------
+  # DATATABLE ----------------------------------------------
   
+  ## main table ----
   output$datatable <-
     renderDataTable(expr = make_datatable(responses = responses()),
                     server = FALSE) # needed to use plugins
@@ -215,8 +225,6 @@ shinyServer(function(input, output, session) {
       selected_row <- input$datatable_rows_selected
       selected_id <- unique(responses()$response_id[selected_row])
       
-      print(selected_row)
-      
       updateTextInput(inputId = "shape_id", value = selected_id)
       
       updateSwitchInput(inputId = "filter_id", value = TRUE)
@@ -225,29 +233,62 @@ shinyServer(function(input, output, session) {
     
   })
   
-  # data corrections
+  ## data corrections ----
   
-  corrections <- read_rds("data/corrections.RDS")
+  corrections <- reactiveVal()
+  corrections(read_rds("data/corrections.RDS"))
   
   output$corrections_table <-
-    renderDataTable(make_corrections_table(corrections))
+    renderDataTable(make_corrections_table(corrections()))
   
   observeEvent(input$submit_correction, {
     new_entry <- data.frame(
       response_id = input$corrections_response_id,
-      correction = input$corrections_text
+      correction = input$corrections_text,
+      user = ifelse(class(current_user()) == "character", current_user(), NA),
+      date = now(),
+      fixed = "⬜️"
     )
-    corrections <- bind_rows(list(corrections, new_entry))
     
-    print(corrections)
+    print(class(current_user()))
+    
+    new_corrections <- bind_rows(list(corrections(), new_entry))
+    corrections(new_corrections)
     
     output$corrections_table <-
-      renderDataTable(make_corrections_table(corrections))
+      renderDataTable(make_corrections_table(corrections()))
     
-    write_rds(corrections, "data/corrections.RDS")
+    write_rds(corrections(), "data/corrections.RDS")
+    
+    updateNumericInput(inputId = "corrections_response_id",
+                       value = numeric(0))
+    updateTextAreaInput(inputId = "corrections_text",
+                        value = character(0))
     
   })
   
+  observeEvent(input$mark_fixed, {
+    selected_rows <- input$corrections_table_rows_selected
+    
+    new_corrections <- corrections()
+    
+    for (i in seq_along(selected_rows)) {
+      if (new_corrections$fixed[selected_rows[i]] == "⬜️") {
+        new_corrections$fixed[selected_rows[i]] <- "✅"
+      } else {
+        new_corrections$fixed[selected_rows[i]] <- "⬜️"
+      }
+    }
+    
+    corrections(new_corrections)
+    
+    output$corrections_table <-
+      renderDataTable(make_corrections_table(new_corrections))
+    
+    write_rds(corrections(), "data/corrections.RDS")
+  })
+  
+  ## duplicates ----
   output$n_dups <- renderText(nrow("n_dups"))
   outputOptions(output, "n_dups", suspendWhenHidden = FALSE)
   
