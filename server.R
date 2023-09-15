@@ -235,37 +235,47 @@ shinyServer(function(input, output, session) {
   
   ## data corrections ----
   
-  corrections <- reactiveVal()
-  corrections(read_rds("data/corrections.RDS"))
+  corrections_data <- read_rds("data/corrections.RDS") |> 
+    arrange(by = desc(fixed))
   
   output$corrections_table <-
-    renderDataTable(make_corrections_table(corrections()))
+    renderDataTable(make_corrections_table(corrections_data))
+  
+  corrections <- reactiveVal()
+  corrections(corrections_data)
   
   observeEvent(input$submit_correction, {
-    new_entry <- data.frame(
-      response_id = input$corrections_response_id,
-      correction = input$corrections_text,
-      user = ifelse(class(current_user()) == "character", current_user(), NA),
-      date = now(),
-      fixed = "⬜️"
-    )
     
-    print(class(current_user()))
-    
-    new_corrections <- bind_rows(list(corrections(), new_entry))
-    corrections(new_corrections)
-    
-    output$corrections_table <-
-      renderDataTable(make_corrections_table(corrections()))
-    
-    write_rds(corrections(), "data/corrections.RDS")
-    
-    updateNumericInput(inputId = "corrections_response_id",
-                       value = numeric(0))
-    updateTextAreaInput(inputId = "corrections_text",
-                        value = character(0))
+    if (is.na(input$corrections_response_id) | input$corrections_text == "") {
+      showNotification("Please enter a valid response ID and comment",
+                       type = "error")
+    } else {
+      new_entry <- data.frame(
+        response_id = input$corrections_response_id,
+        correction = input$corrections_text,
+        user = ifelse(class(current_user()) == "character", current_user(), NA),
+        date = now(),
+        fixed = "⬜️"
+      )
+      
+      new_corrections <- bind_rows(list(corrections(), new_entry))
+      corrections(new_corrections)
+      
+      output$corrections_table <-
+        renderDataTable(make_corrections_table(corrections()))
+      
+      write_rds(corrections(), "data/corrections.RDS")
+      
+      updateNumericInput(inputId = "corrections_response_id",
+                         value = numeric(0))
+      updateTextAreaInput(inputId = "corrections_text",
+                          value = character(0))
+      
+    }
     
   })
+  
+  corrections_proxy <- dataTableProxy("corrections_table")
   
   observeEvent(input$mark_fixed, {
     selected_rows <- input$corrections_table_rows_selected
@@ -282,8 +292,7 @@ shinyServer(function(input, output, session) {
     
     corrections(new_corrections)
     
-    output$corrections_table <-
-      renderDataTable(make_corrections_table(new_corrections))
+    replaceData(corrections_proxy, new_corrections)
     
     write_rds(corrections(), "data/corrections.RDS")
   })

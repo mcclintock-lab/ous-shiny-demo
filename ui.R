@@ -210,36 +210,54 @@ ui <- (dashboardPage(
                       ## corrections ----
                       tabPanel(
                         title = "Corrections",
-                        
-                        actionBttn(
-                          "submit_correction",
-                          "Submit Correction",
-                          style = "jelly",
-                          size = "sm",
-                          icon = icon("upload")
-                        ),
-                        
-                        actionBttn(
-                          "mark_fixed",
-                          "Mark / Unmark as Fixed",
-                          style = "jelly",
-                          size = "sm",
-                          icon = icon("check")
-                        ),
-                        
-                        tags$br(),
-                        tags$br(),
+                  
                         tags$br(),
                         
-                        numericInput("corrections_response_id", "Response ID", NA,
+                        numericInput("corrections_response_id", "Response ID:", NA,
                                      width = "25%"),
                         textAreaInput("corrections_text",
-                                      "Corrections to be made",
+                                      "Corrections to be made:",
                                       resize = "vertical"), 
-                        tags$br(),
+                        
                         tags$br(),
                         
+                        # actionBttn(
+                        #   "submit_correction",
+                        #   "Submit Correction",
+                        #   style = "jelly",
+                        #   size = "sm",
+                        #   icon = icon("upload")
+                        # ),
+                        
+                        # actionBttn(
+                        #   "mark_fixed",
+                        #   "Mark / Unmark as Fixed",
+                        #   style = "jelly",
+                        #   size = "sm",
+                        #   icon = icon("check")
+                        # ),
+                        
                         shinydashboardPlus::box(
+                          title = p(
+                            div(
+                              id = "corrections_title",
+                              "Corrections",
+                              actionBttn(
+                                "mark_fixed",
+                                "Mark fixed",
+                                style = "jelly",
+                                size = "md",
+                                icon = icon("check")
+                              ),
+                              actionBttn(
+                                "submit_correction",
+                                "Submit new ",
+                                style = "jelly",
+                                size = "md",
+                                icon = icon("upload")
+                              )
+                            )
+                          ),
                           width = 12,
                           
                           dataTableOutput("corrections_table")
