@@ -16,7 +16,7 @@ library(ggchicklet)
 library(snakecase)
 library(lubridate)
 
-secure <- F
+secure <- T
 
 project <- "demo"
 

@@ -18,7 +18,12 @@ make_datatable <- function(responses) {
       scroller = TRUE,
       lengthChange = FALSE
     )
-  )
+  ) |> 
+    # removes row striping
+    formatStyle(
+      columns = -1:ncol(responses) + 1,
+      "box-shadow" = "inset 0 0 0 9999px rgba(0, 0, 0, 0)"
+    )
   
   return(table)
 }
@@ -47,10 +52,11 @@ make_dups_table <- function() {
   datatable(
     exact_dups,
     colnames = c("Response ID", "Duplicate ID"),
+    class = list(stripe = FALSE),
     options = list(
       pageLength = 50,
       lengthChange = FALSE,
-      dom = "t"
+      dom = "t",
     )
   )
   
@@ -60,10 +66,10 @@ make_dups_table <- function() {
 make_corrections_table <- function(corrections) {
   table <- datatable(
     corrections,
-    colnames = c("Response ID", "Correction", "User", "Date", "Fixed"),
+    colnames = c("Response ID", "Sector", "Correction", "User", "Date", "Fixed"),
     escape = FALSE,
     options = list(
-      lengthChange = FALSE,
+      pageLength = 50,
       dom = "t",
       columnDefs = list(list(
         className = 'dt-center', targets = 1

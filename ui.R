@@ -197,7 +197,7 @@ ui <- (dashboardPage(
                         actionBttn(
                           "dt_view_shapes",
                           "View in Map",
-                          style = "jelly",
+                          style = "simple",
                           size = "sm",
                           icon = icon("map")
                         ),
@@ -210,59 +210,54 @@ ui <- (dashboardPage(
                       ## corrections ----
                       tabPanel(
                         title = "Corrections",
-                  
-                        tags$br(),
-                        
-                        numericInput("corrections_response_id", "Response ID:", NA,
-                                     width = "25%"),
-                        textAreaInput("corrections_text",
-                                      "Corrections to be made:",
-                                      resize = "vertical"), 
                         
                         tags$br(),
                         
-                        # actionBttn(
-                        #   "submit_correction",
-                        #   "Submit Correction",
-                        #   style = "jelly",
-                        #   size = "sm",
-                        #   icon = icon("upload")
-                        # ),
+                        numericInput(
+                          "corrections_response_id",
+                          "Response ID:",
+                          NA,
+                          width = "25%"), 
+                        selectInput(
+                          "corrections_sector",
+                          "Sector:",
+                          choices = as.character(unique(responses$sector)),
+                          selected = NULL,
+                          width = "25%"
+                        ),
+                        textAreaInput(
+                          "corrections_text",
+                          "Corrections to be made:",
+                          resize = "vertical",
+                          width = "50%"
+                        ),
                         
-                        # actionBttn(
-                        #   "mark_fixed",
-                        #   "Mark / Unmark as Fixed",
-                        #   style = "jelly",
-                        #   size = "sm",
-                        #   icon = icon("check")
-                        # ),
+                        tags$br(),
                         
                         shinydashboardPlus::box(
-                          title = p(
-                            div(
-                              id = "corrections_title",
-                              "Corrections",
-                              actionBttn(
-                                "mark_fixed",
-                                "Mark fixed",
-                                style = "jelly",
-                                size = "md",
-                                icon = icon("check")
-                              ),
-                              actionBttn(
-                                "submit_correction",
-                                "Submit new ",
-                                style = "jelly",
-                                size = "md",
-                                icon = icon("upload")
-                              )
+                          id = "corrections_box",
+                          title = p(div(
+                            id = "corrections_title",
+                            actionBttn(
+                              "mark_fixed",
+                              "Mark fixed",
+                              style = "simple",
+                              size = "md",
+                              icon = icon("check")
+                            ),
+                            actionBttn(
+                              "submit_correction",
+                              "Submit new ",
+                              style = "simple",
+                              size = "md",
+                              icon = icon("plus")
                             )
-                          ),
+                          )),
                           width = 12,
                           
                           dataTableOutput("corrections_table")
                         )
-                      ), 
+                      ),
                       
                       ## duplicates ----
                       # tabPanel(
@@ -291,7 +286,7 @@ ui <- (dashboardPage(
                     actionBttn(
                       "clear_shape_filters",
                       "Clear Map & Filters",
-                      style = "jelly",
+                      style = "simple",
                       size = "sm",
                       icon = icon("refresh")
                     ),
@@ -300,7 +295,7 @@ ui <- (dashboardPage(
                     downloadBttn(
                       "download_filtered_shapes",
                       "Export Current Shapes",
-                      style = "jelly",
+                      style = "simple",
                       size = "sm",
                     ),
                     
@@ -385,7 +380,7 @@ ui <- (dashboardPage(
               "download_report_totals",
               "Download",
               size = "sm",
-              style = "jelly"
+              style = "simple"
             ),
             
             dataTableOutput("reporting_totals_table") |>
@@ -404,7 +399,7 @@ ui <- (dashboardPage(
               "download_report_sector",
               "Download",
               size = "sm",
-              style = "jelly"
+              style = "simple"
             ),
             
             dataTableOutput("reporting_by_sector_table") |>

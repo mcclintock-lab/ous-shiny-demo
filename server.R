@@ -27,10 +27,6 @@ shinyServer(function(input, output, session) {
     reactiveValuesToList(res_auth)$user
   })
   
-  observe({
-    print(current_user())
-  })
-  
   # reactive file reading ---------------------------------------
   
   # responses
@@ -92,8 +88,7 @@ shinyServer(function(input, output, session) {
     valueBox(
       nrow(respondent_info()),
       HTML(paste0("Individual", br(), "Respondents")),
-      icon = icon("user", class = "fa-solid fa-user"),
-      color = "blue"
+      icon = icon("user", class = "fa-solid fa-user")
     )
   })
   
@@ -102,8 +97,7 @@ shinyServer(function(input, output, session) {
     valueBox(
       sum(respondent_info()$max_rep),
       HTML(paste0("Individuals", br(), "Represented")),
-      icon = icon("users"),
-      color = "aqua"
+      icon = icon("users")
     )
   })
   
@@ -111,8 +105,8 @@ shinyServer(function(input, output, session) {
   output$sec_resp <- renderValueBox({
     valueBox(nrow(responses()),
              HTML(paste0("Sector", br(), "Responses")),
-             icon = icon("water"),
-             color = "teal")
+             icon = icon("water")
+    )
   })
   
   
@@ -127,11 +121,11 @@ shinyServer(function(input, output, session) {
   observe({
     if (!is.null(write_status()) && write_status() == TRUE) {
       
-      # make target_table_state object reactive so the save_targets event can access the current changes
-      target_table_state <- reactiveVal()
-      target_table_state(targets)
+      # make target_table_reactive object reactive so the save_targets event can access the current changes
+      target_table_reactive <- reactiveVal()
+      target_table_reactive(targets)
       
-      # listen for user edits to table and update target_table_state accordingly
+      # listen for user edits to table and update target_table_reactive accordingly
       observeEvent(input$target_table_cell_edit, {
         changed_row <- input$target_table_cell_edit$row
         changed_val <- input$target_table_cell_edit$value
@@ -139,10 +133,12 @@ shinyServer(function(input, output, session) {
         changed_target <- targets_progress[[changed_row, "metric"]] |>
           snakecase::to_snake_case()
 
-        changed_target_table <- target_table_state()
+        changed_target_table <- target_table_reactive()
         
         changed_target_table[changed_target_table$metric == changed_target, ]$target <-
           changed_val
+        
+        target_table_reactive(changed_target_table)
         
         # save table state to global object
         assign("changed_target_table", changed_target_table, envir = .GlobalEnv)
@@ -154,7 +150,7 @@ shinyServer(function(input, output, session) {
         write_csv(changed_target_table, "data/demo_survey_targets.csv")
         
         assign("targets",
-               read_csv("data/demo_survey_targets.csv"),
+               changed_target_table,
                envir = .GlobalEnv)
         
         # rerender table on save
@@ -212,7 +208,7 @@ shinyServer(function(input, output, session) {
   ## main table ----
   output$datatable <-
     renderDataTable(expr = make_datatable(responses = responses()),
-                    server = FALSE) # needed to use plugins
+                    server = FALSE)
   
   observeEvent(input$dt_view_shapes, {
     if (is.null(input$datatable_rows_selected)) {
@@ -223,7 +219,7 @@ shinyServer(function(input, output, session) {
       updateTabItems(inputId = "tabs", selected = "shapes")
       
       selected_row <- input$datatable_rows_selected
-      selected_id <- unique(responses()$response_id[selected_row])
+      selected_id <- unique(respondent_info()$response_id[selected_row])
       
       updateTextInput(inputId = "shape_id", value = selected_id)
       
@@ -233,7 +229,7 @@ shinyServer(function(input, output, session) {
     
   })
   
-  ## data corrections ----
+  ## corrections ----
   
   corrections_data <- read_rds("data/corrections.RDS") |> 
     arrange(by = desc(fixed))
@@ -244,6 +240,8 @@ shinyServer(function(input, output, session) {
   corrections <- reactiveVal()
   corrections(corrections_data)
   
+  corrections_proxy <- dataTableProxy("corrections_table")
+  
   observeEvent(input$submit_correction, {
     
     if (is.na(input$corrections_response_id) | input$corrections_text == "") {
@@ -252,6 +250,7 @@ shinyServer(function(input, output, session) {
     } else {
       new_entry <- data.frame(
         response_id = input$corrections_response_id,
+        sector = input$corrections_sector,
         correction = input$corrections_text,
         user = ifelse(class(current_user()) == "character", current_user(), NA),
         date = now(),
@@ -259,10 +258,10 @@ shinyServer(function(input, output, session) {
       )
       
       new_corrections <- bind_rows(list(corrections(), new_entry))
+      
       corrections(new_corrections)
       
-      output$corrections_table <-
-        renderDataTable(make_corrections_table(corrections()))
+      replaceData(corrections_proxy, new_corrections)
       
       write_rds(corrections(), "data/corrections.RDS")
       
@@ -275,7 +274,7 @@ shinyServer(function(input, output, session) {
     
   })
   
-  corrections_proxy <- dataTableProxy("corrections_table")
+  # corrections_proxy <- dataTableProxy("corrections_table")
   
   observeEvent(input$mark_fixed, {
     selected_rows <- input$corrections_table_rows_selected
