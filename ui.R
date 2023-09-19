@@ -217,14 +217,8 @@ ui <- (dashboardPage(
                           "corrections_response_id",
                           "Response ID:",
                           NA,
-                          width = "25%"), 
-                        selectInput(
-                          "corrections_sector",
-                          "Sector:",
-                          choices = as.character(unique(responses$sector)),
-                          selected = NULL,
                           width = "25%"
-                        ),
+                          ),
                         textAreaInput(
                           "corrections_text",
                           "Corrections to be made:",

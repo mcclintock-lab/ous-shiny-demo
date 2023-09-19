@@ -250,31 +250,33 @@ shinyServer(function(input, output, session) {
     } else {
       new_entry <- data.frame(
         response_id = input$corrections_response_id,
-        sector = input$corrections_sector,
         correction = input$corrections_text,
         user = ifelse(class(current_user()) == "character", current_user(), NA),
         date = now(),
         fixed = "⬜️"
       )
       
-      new_corrections <- bind_rows(list(corrections(), new_entry))
-      
-      corrections(new_corrections)
-      
-      replaceData(corrections_proxy, new_corrections)
-      
-      write_rds(corrections(), "data/corrections.RDS")
-      
-      updateNumericInput(inputId = "corrections_response_id",
-                         value = numeric(0))
-      updateTextAreaInput(inputId = "corrections_text",
-                          value = character(0))
-      
+      # make sure response_id exists in data - show warning if not
+      if (new_entry[["response_id"]] %in% responses()$response_id) {
+        new_corrections <- bind_rows(list(corrections(), new_entry))
+        
+        corrections(new_corrections)
+        
+        replaceData(corrections_proxy, new_corrections)
+        
+        write_rds(corrections(), "data/corrections.RDS")
+        
+        updateNumericInput(inputId = "corrections_response_id",
+                           value = numeric(0))
+        updateTextAreaInput(inputId = "corrections_text",
+                            value = character(0))
+      } else {
+        showNotification("The submitted response ID doesn't exist in the dataset",
+                         type = "error")
+      }
     }
     
   })
-  
-  # corrections_proxy <- dataTableProxy("corrections_table")
   
   observeEvent(input$mark_fixed, {
     selected_rows <- input$corrections_table_rows_selected
