@@ -44,16 +44,6 @@ make_target_table <- function(responses) {
       metric = "recreation_sports_and_tourism_sector"
     )
   
-  sci_tech <- responses |>
-    filter(
-      sector == "Scientific Research, Technological Development and Environmental Monitoring"
-    ) |>
-    summarize(
-      individuals = n(),
-      represented = sum(n_rep),
-      metric = "science_tech_and_monitoring_sector"
-    )
-  
   aquaculture <- responses |>
     filter(sector == "Aquaculture") |>
     summarize(
@@ -86,13 +76,6 @@ make_target_table <- function(responses) {
       metric = "energy_development_sector"
     )
   
-  vessels <- responses |>
-    summarize(
-      individuals = length(unique(vessel_id)),
-      represented = NA,
-      metric = "vessels"
-    )
-  
   
   population <- responses |>
     select(response_id, n_rep) |>
@@ -112,11 +95,9 @@ make_target_table <- function(responses) {
       rec_fishing,
       comm_fishing,
       tour_fishing,
-      vessels,
       population,
       research,
       rec_sports,
-      sci_tech,
       aquaculture,
       sec_def,
       energy_dev,
@@ -197,37 +178,17 @@ make_target_table <- function(responses) {
         ))
       )
     ) |>
-    # highlight column of metric (rep or indiv) that is associated with "percent achieved"
-    formatStyle(
-      columns = "individuals",
-      valueColumns = "metric",
-      backgroundColor = styleEqual(unique(targets_progress$metric[!str_detect(targets_progress$metric, "Sector|Population")]),
-                                   "#eefafa"),
-      border = styleEqual(unique(targets_progress$metric[!str_detect(targets_progress$metric, "Sector|Population")]),
-                          '0.1px solid #b8b8b8'),
-      "border-radius" = styleEqual(unique(targets_progress$metric[!str_detect(targets_progress$metric, "Sector|Population")]),
-                                   '5px'),
-      fontWeight = styleEqual(unique(targets_progress$metric[!str_detect(targets_progress$metric, "Sector|Population")]),
-                              "bold")
-    ) |>
-    formatStyle(
-      columns = "represented",
-      valueColumns = "metric",
-      backgroundColor = styleEqual(unique(targets_progress$metric[str_detect(targets_progress$metric, "Sector|Population")]),
-                                   "#eefafa"),
-      border = styleEqual(unique(targets_progress$metric[str_detect(targets_progress$metric, "Sector|Population")]),
-                          '0.1px solid #b8b8b8'),
-      "border-radius" = styleEqual(unique(targets_progress$metric[str_detect(targets_progress$metric, "Sector|Population")]),
-                                   '5px'),
-      fontWeight = styleEqual(unique(targets_progress$metric[str_detect(targets_progress$metric, "Sector|Population")]),
-                              "bold")
-    ) |>
     # percent color ramp formatting
     formatStyle(
       columns = "percent",
       backgroundColor = styleInterval(breaks, colors),
       "border-radius" = "5px"
     ) |>
+    # removes row striping
+    formatStyle(
+      columns = -1:ncol(targets_progress) + 1,
+      "box-shadow" = "inset 0 0 0 9999px rgba(0, 0, 0, 0)"
+    ) |> 
     formatPercentage(columns = "percent",
                      mark = ".",
                      digits = 0)

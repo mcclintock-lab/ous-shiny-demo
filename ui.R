@@ -63,7 +63,7 @@ ui <- (dashboardPage(
       tabItem(
         tabName = "overview",
         
-        # value boxes --------------------------------
+        ## value boxes ----
         fluidRow(
           width = "100%",
           
@@ -115,7 +115,7 @@ ui <- (dashboardPage(
             )
           ),
           
-          # target table ----
+          ## target table ----
           div(
             id = "target-box",
             class = "col-sm-12 col-md-12 col-lg-12",
@@ -138,7 +138,7 @@ ui <- (dashboardPage(
         
         
         
-        # plots --------------------------------------------------------
+        ## plots ----
         
         div(id = "plots-row",
             fluidRow(
@@ -184,6 +184,7 @@ ui <- (dashboardPage(
       # DATA TABLE ----------------------------------------------------------
       tabItem(tabName = "explore",
               
+              ## main tab ----
               div(id = "dt-box",
                   box(
                     width = "100%",
@@ -196,7 +197,7 @@ ui <- (dashboardPage(
                         actionBttn(
                           "dt_view_shapes",
                           "View in Map",
-                          style = "jelly",
+                          style = "simple",
                           size = "sm",
                           icon = icon("map")
                         ),
@@ -205,18 +206,63 @@ ui <- (dashboardPage(
                           withSpinner(type = 8)
                         
                       ),
-                      # duplicates tab - only displays table if dups exist
+                      
+                      ## corrections ----
                       tabPanel(
-                        title = "Duplicates",
-                        conditionalPanel(condition = "output.n_dups!='0'",
-                                         dataTableOutput("dup_table", width = "50%")),
-                        conditionalPanel(condition = "output.n_dups=='0'",
-                                         HTML(
-                                           paste0(br(), "No duplicate responses found")
-                                         ))
+                        title = "Corrections",
                         
+                        tags$br(),
                         
-                      )
+                        numericInput(
+                          "corrections_response_id",
+                          "Response ID:",
+                          NA,
+                          width = "25%"
+                          ),
+                        textAreaInput(
+                          "corrections_text",
+                          "Corrections to be made:",
+                          resize = "vertical",
+                          width = "50%"
+                        ),
+                        
+                        tags$br(),
+                        
+                        shinydashboardPlus::box(
+                          id = "corrections_box",
+                          title = p(div(
+                            id = "corrections_title",
+                            actionBttn(
+                              "mark_fixed",
+                              "Mark fixed",
+                              style = "simple",
+                              size = "md",
+                              icon = icon("check")
+                            ),
+                            actionBttn(
+                              "submit_correction",
+                              "Submit new ",
+                              style = "simple",
+                              size = "md",
+                              icon = icon("plus")
+                            )
+                          )),
+                          width = 12,
+                          
+                          dataTableOutput("corrections_table")
+                        )
+                      ),
+                      
+                      ## duplicates ----
+                      # tabPanel(
+                      #   title = "Duplicates",
+                      #   conditionalPanel(condition = "output.n_dups!='0'",
+                      #                    dataTableOutput("dup_table", width = "50%")),
+                      #   conditionalPanel(condition = "output.n_dups=='0'",
+                      #                    HTML(
+                      #                      paste0(br(), "No duplicate responses found")
+                      #                    ))
+                      # )
                     )
                   ))),
       
@@ -234,7 +280,7 @@ ui <- (dashboardPage(
                     actionBttn(
                       "clear_shape_filters",
                       "Clear Map & Filters",
-                      style = "jelly",
+                      style = "simple",
                       size = "sm",
                       icon = icon("refresh")
                     ),
@@ -243,7 +289,7 @@ ui <- (dashboardPage(
                     downloadBttn(
                       "download_filtered_shapes",
                       "Export Current Shapes",
-                      style = "jelly",
+                      style = "simple",
                       size = "sm",
                     ),
                     
@@ -328,7 +374,7 @@ ui <- (dashboardPage(
               "download_report_totals",
               "Download",
               size = "sm",
-              style = "jelly"
+              style = "simple"
             ),
             
             dataTableOutput("reporting_totals_table") |>
@@ -347,7 +393,7 @@ ui <- (dashboardPage(
               "download_report_sector",
               "Download",
               size = "sm",
-              style = "jelly"
+              style = "simple"
             ),
             
             dataTableOutput("reporting_by_sector_table") |>

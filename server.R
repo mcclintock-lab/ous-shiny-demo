@@ -1,7 +1,7 @@
 # Define server logic
 
 shinyServer(function(input, output, session) {
-  # user auth --------------------------------
+  # USER AUTH --------------------------------
   
   # read in db passphrase
   passphrase_file <- "auth/passphrase.txt"
@@ -17,12 +17,17 @@ shinyServer(function(input, output, session) {
     reactiveValuesToList(res_auth)$admin
   })
   
-  # Create reactive admin status to determine privileges
+  # write privileges if not admin
   write_status <- reactive({
     reactiveValuesToList(res_auth)$write
   })
   
-  # reactive file reading ---------------------------------------
+  # current user
+  current_user <- reactive({
+    reactiveValuesToList(res_auth)$user
+  })
+  
+  # FILE READING ---------------------------------------
   
   # responses
   responses_reader <- reactiveFileReader(
@@ -66,12 +71,14 @@ shinyServer(function(input, output, session) {
   data_update <- reactive(data_update_reader() |>
                             as_datetime(tz = "America/Los_Angeles"))
   
-  # refresh app button ----
+  # REFRESH APP ----------------------------------------------
   observeEvent(input$refresh, {
     shinyjs::js$refresh_page()
   })
   
-  # info boxes ------------------------------------------------
+  # OVERVIEW ------------------------------------------------
+  
+  ## info boxes ----
   
   # latest data update
   output$latest_data <- renderUI({
@@ -83,8 +90,7 @@ shinyServer(function(input, output, session) {
     valueBox(
       nrow(respondent_info()),
       HTML(paste0("Individual", br(), "Respondents")),
-      icon = icon("user", class = "fa-solid fa-user"),
-      color = "blue"
+      icon = icon("user", class = "fa-solid fa-user")
     )
   })
   
@@ -93,8 +99,7 @@ shinyServer(function(input, output, session) {
     valueBox(
       sum(respondent_info()$max_rep),
       HTML(paste0("Individuals", br(), "Represented")),
-      icon = icon("users"),
-      color = "aqua"
+      icon = icon("users")
     )
   })
   
@@ -102,38 +107,41 @@ shinyServer(function(input, output, session) {
   output$sec_resp <- renderValueBox({
     valueBox(nrow(responses()),
              HTML(paste0("Sector", br(), "Responses")),
-             icon = icon("water"),
-             color = "teal")
+             icon = icon("water")
+    )
   })
   
   
-  # targets ------------------------------------------------
+  ## targets ------------------------------------------------
   
-  # target table
+  ### target table ----
   output$target_table <- renderDataTable({
     make_target_table(responses = responses())
   })
   
-  # admin only - allow writing target changes to local csv
+  ### target editing ----
   observe({
+    # admin only - allow writing target changes to local csv
     if (!is.null(write_status()) && write_status() == TRUE) {
       
-      # make target_table_state object reactive so the save_targets event can access the current changes
-      target_table_state <- reactiveVal()
-      target_table_state(targets)
+      # make target_table_reactive object reactive so the save_targets event can access the current changes
+      target_table_reactive <- reactiveVal()
+      target_table_reactive(targets)
       
-      # listen for user edits to table and update target_table_state accordingly
+      # listen for user edits to table and update target_table_reactive accordingly
       observeEvent(input$target_table_cell_edit, {
         changed_row <- input$target_table_cell_edit$row
         changed_val <- input$target_table_cell_edit$value
         changed_val <- ifelse(changed_val == "", NA, changed_val)
         changed_target <- targets_progress[[changed_row, "metric"]] |>
           snakecase::to_snake_case()
-        print(changed_val)
-        changed_target_table <- target_table_state()
+
+        changed_target_table <- target_table_reactive()
         
         changed_target_table[changed_target_table$metric == changed_target, ]$target <-
           changed_val
+        
+        target_table_reactive(changed_target_table)
         
         # save table state to global object
         assign("changed_target_table", changed_target_table, envir = .GlobalEnv)
@@ -145,7 +153,7 @@ shinyServer(function(input, output, session) {
         write_csv(changed_target_table, "data/demo_survey_targets.csv")
         
         assign("targets",
-               read_csv("data/demo_survey_targets.csv"),
+               changed_target_table,
                envir = .GlobalEnv)
         
         # rerender table on save
@@ -165,14 +173,14 @@ shinyServer(function(input, output, session) {
   })
   
   
-  # demographic plot ---------------------
+  ## demographic plot ----
   
   output$demo_plot <- renderPlot({
     make_demo_plot(respondent_info = respondent_info())
     
   })
   
-  # Sector plot ------------------------------------
+  ## sector plot ------------------------------------
   
   # initially define metric that can be changed with the box dropdown menu
   resp_plot_metric <- reactiveVal()
@@ -198,11 +206,12 @@ shinyServer(function(input, output, session) {
   })
   
   
-  # datatable ----------------------------------------------
+  # DATATABLE ----------------------------------------------
   
+  ## main table ----
   output$datatable <-
     renderDataTable(expr = make_datatable(responses = responses()),
-                    server = FALSE) # needed to use plugins
+                    server = FALSE)
   
   observeEvent(input$dt_view_shapes, {
     if (is.null(input$datatable_rows_selected)) {
@@ -213,9 +222,7 @@ shinyServer(function(input, output, session) {
       updateTabItems(inputId = "tabs", selected = "shapes")
       
       selected_row <- input$datatable_rows_selected
-      selected_id <- unique(responses()$response_id[selected_row])
-      
-      print(selected_row)
+      selected_id <- unique(respondent_info()$response_id[selected_row])
       
       updateTextInput(inputId = "shape_id", value = selected_id)
       
@@ -225,14 +232,85 @@ shinyServer(function(input, output, session) {
     
   })
   
+  ## corrections ----
+  
+  corrections_data <- read_rds("data/corrections.RDS") |> 
+    arrange(by = desc(fixed))
+  
+  output$corrections_table <-
+    renderDataTable(make_corrections_table(corrections_data))
+  
+  corrections <- reactiveVal()
+  corrections(corrections_data)
+  
+  corrections_proxy <- dataTableProxy("corrections_table")
+  
+  # submit new correction
+  observeEvent(input$submit_correction, {
+    
+    if (is.na(input$corrections_response_id) | input$corrections_text == "") {
+      showNotification("Please enter a valid response ID and comment",
+                       type = "error")
+    } else {
+      new_entry <- data.frame(
+        response_id = input$corrections_response_id,
+        correction = input$corrections_text,
+        user = ifelse(class(current_user()) == "character", current_user(), NA),
+        date = now(),
+        fixed = "⬜️"
+      )
+      
+      # make sure response_id exists in data - show warning if not
+      if (new_entry[["response_id"]] %in% responses()$response_id) {
+        new_corrections <- bind_rows(list(corrections(), new_entry))
+        
+        corrections(new_corrections)
+        
+        replaceData(corrections_proxy, new_corrections)
+        
+        write_rds(corrections(), "data/corrections.RDS")
+        
+        updateNumericInput(inputId = "corrections_response_id",
+                           value = numeric(0))
+        updateTextAreaInput(inputId = "corrections_text",
+                            value = character(0))
+      } else {
+        showNotification("The submitted response ID doesn't exist in the dataset",
+                         type = "error")
+      }
+    }
+    
+  })
+  
+  # mark entry as fixed
+  observeEvent(input$mark_fixed, {
+    selected_rows <- input$corrections_table_rows_selected
+    
+    new_corrections <- corrections()
+    
+    for (i in seq_along(selected_rows)) {
+      if (new_corrections$fixed[selected_rows[i]] == "⬜️") {
+        new_corrections$fixed[selected_rows[i]] <- "✅"
+      } else {
+        new_corrections$fixed[selected_rows[i]] <- "⬜️"
+      }
+    }
+    
+    corrections(new_corrections)
+    
+    replaceData(corrections_proxy, new_corrections)
+    
+    write_rds(corrections(), "data/corrections.RDS")
+  })
+  
+  ## duplicates ----
   output$n_dups <- renderText(nrow("n_dups"))
   outputOptions(output, "n_dups", suspendWhenHidden = FALSE)
   
   output$dup_table <- renderDataTable(make_dups_table())
   
   
-  
-  # Shape viewer -------------------------------------------------
+  # SHAPE VIEWER -------------------------------------------------
   
   output$map <- renderLeaflet({
     #
@@ -403,7 +481,7 @@ shinyServer(function(input, output, session) {
   
   output$reporting_by_sector_title <- renderText("By Sector")
   
-  # download reporting CSVs
+  ## download CSVs ----
   
   data_report_totals <- reactive(reporting_totals)
   
