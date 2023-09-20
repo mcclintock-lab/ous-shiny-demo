@@ -1,7 +1,7 @@
 # Define server logic
 
 shinyServer(function(input, output, session) {
-  # user auth --------------------------------
+  # USER AUTH --------------------------------
   
   # read in db passphrase
   passphrase_file <- "auth/passphrase.txt"
@@ -27,7 +27,7 @@ shinyServer(function(input, output, session) {
     reactiveValuesToList(res_auth)$user
   })
   
-  # reactive file reading ---------------------------------------
+  # FILE READING ---------------------------------------
   
   # responses
   responses_reader <- reactiveFileReader(
@@ -71,12 +71,14 @@ shinyServer(function(input, output, session) {
   data_update <- reactive(data_update_reader() |>
                             as_datetime(tz = "America/Los_Angeles"))
   
-  # refresh app button ----
+  # REFRESH APP ----------------------------------------------
   observeEvent(input$refresh, {
     shinyjs::js$refresh_page()
   })
   
-  # info boxes ------------------------------------------------
+  # OVERVIEW ------------------------------------------------
+  
+  ## info boxes ----
   
   # latest data update
   output$latest_data <- renderUI({
@@ -110,15 +112,16 @@ shinyServer(function(input, output, session) {
   })
   
   
-  # targets ------------------------------------------------
+  ## targets ------------------------------------------------
   
-  # target table
+  ### target table ----
   output$target_table <- renderDataTable({
     make_target_table(responses = responses())
   })
   
-  # admin only - allow writing target changes to local csv
+  ### target editing ----
   observe({
+    # admin only - allow writing target changes to local csv
     if (!is.null(write_status()) && write_status() == TRUE) {
       
       # make target_table_reactive object reactive so the save_targets event can access the current changes
@@ -170,14 +173,14 @@ shinyServer(function(input, output, session) {
   })
   
   
-  # demographic plot ---------------------
+  ## demographic plot ----
   
   output$demo_plot <- renderPlot({
     make_demo_plot(respondent_info = respondent_info())
     
   })
   
-  # Sector plot ------------------------------------
+  ## sector plot ------------------------------------
   
   # initially define metric that can be changed with the box dropdown menu
   resp_plot_metric <- reactiveVal()
@@ -242,6 +245,7 @@ shinyServer(function(input, output, session) {
   
   corrections_proxy <- dataTableProxy("corrections_table")
   
+  # submit new correction
   observeEvent(input$submit_correction, {
     
     if (is.na(input$corrections_response_id) | input$corrections_text == "") {
@@ -278,6 +282,7 @@ shinyServer(function(input, output, session) {
     
   })
   
+  # mark entry as fixed
   observeEvent(input$mark_fixed, {
     selected_rows <- input$corrections_table_rows_selected
     
@@ -305,7 +310,7 @@ shinyServer(function(input, output, session) {
   output$dup_table <- renderDataTable(make_dups_table())
   
   
-  # Shape viewer -------------------------------------------------
+  # SHAPE VIEWER -------------------------------------------------
   
   output$map <- renderLeaflet({
     #
@@ -476,7 +481,7 @@ shinyServer(function(input, output, session) {
   
   output$reporting_by_sector_title <- renderText("By Sector")
   
-  # download reporting CSVs
+  ## download CSVs ----
   
   data_report_totals <- reactive(reporting_totals)
   
