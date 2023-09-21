@@ -4,7 +4,7 @@
 # table for DT data explorer
 make_datatable <- function(responses) {
   # create df with desired columns
-  response_table <- respondent_info 
+  response_table <- responses 
   
   # output datatable object
   table = datatable(

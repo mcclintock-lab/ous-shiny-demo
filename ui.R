@@ -186,8 +186,14 @@ ui <- (dashboardPage(
               
               ## main tab ----
               div(id = "dt-box",
-                  box(
-                    width = "100%",
+                  shinydashboardPlus::box(
+                    title = "Ocean Use Survey Data",
+                    width = 12,
+                    headerBorder = FALSE,
+                    dropdownMenu = shinydashboardPlus::boxDropdown(
+                      shinydashboardPlus::boxDropdownItem("Edit data", id = "edit_datatable"),
+                      shinydashboardPlus::boxDropdownItem("Save edits", id = "save_datatable_edits")
+                    ),
                     tabBox(
                       width = "100%",
                       tabPanel(
@@ -359,6 +365,7 @@ ui <- (dashboardPage(
                     ))
               )),
       
+      # REPORTING -------------------------------------
       tabItem(
         tabName = "reporting",
         

@@ -55,6 +55,6 @@ region_list <- unique(respondent_info[, get(region)])
 
 # load scripts
 source("R/make_plots.R")
-source("R/make_data_explorer.R")
+source("R/make_datatable.R")
 source("R/make_target_table.R")
 source("R/make_reporting_tables.R")

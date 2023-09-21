@@ -135,7 +135,7 @@ shinyServer(function(input, output, session) {
         changed_val <- ifelse(changed_val == "", NA, changed_val)
         changed_target <- targets_progress[[changed_row, "metric"]] |>
           snakecase::to_snake_case()
-
+        
         changed_target_table <- target_table_reactive()
         
         changed_target_table[changed_target_table$metric == changed_target, ]$target <-
@@ -213,6 +213,7 @@ shinyServer(function(input, output, session) {
     renderDataTable(expr = make_datatable(responses = responses()),
                     server = FALSE)
   
+  ### view in map ----
   observeEvent(input$dt_view_shapes, {
     if (is.null(input$datatable_rows_selected)) {
       showNotification("Please select a response in the table to view on map",
@@ -222,14 +223,51 @@ shinyServer(function(input, output, session) {
       updateTabItems(inputId = "tabs", selected = "shapes")
       
       selected_row <- input$datatable_rows_selected
-      selected_id <- unique(respondent_info()$response_id[selected_row])
+      selected_id <- unique(responses()$response_id[selected_row])
       
       updateTextInput(inputId = "shape_id", value = selected_id)
       
       updateSwitchInput(inputId = "filter_id", value = TRUE)
       
     }
-    
+  })
+  
+  ### data editing ----
+  observe({
+    # admin only - allow writing target changes to local csv
+    if (!is.null(write_status()) && write_status() == TRUE) {
+      
+      
+      # listen for user edits to table and update target_table_reactive accordingly
+      observeEvent(input$datatable_cell_edit, {
+        changed_row <- input$datatable_cell_edit$row
+        changed_col <- input$datatable_cell_edit$col
+        changed_val <- input$datatable_cell_edit$value
+        changed_val <- ifelse(changed_val == "", NA, changed_val)
+        
+        changed_responses <- responses()
+        
+        changed_responses[changed_row, changed_col] <- changed_val
+        
+        # save table state to global object so additional changes can be made
+        assign("changed_responses", changed_responses, envir = .GlobalEnv)
+        
+        # info for change log
+        changed_response_id <- responses()[[changed_row, "response_id"]]
+        original_val <- responses()[[changed_row, changed_col]]
+        
+      })
+      
+      # save_targets listener - overwrite source targets
+      observeEvent(input$save_datatable_edits, {
+        write_rds(changed_responses, "data/temp/responses.RDS")
+        
+        # rerender table on save
+        output$datatable <- renderDataTable({
+          make_datatable(responses = changed_responses)
+        })
+      })
+    }
   })
   
   ## corrections ----
@@ -313,7 +351,6 @@ shinyServer(function(input, output, session) {
   # SHAPE VIEWER -------------------------------------------------
   
   output$map <- renderLeaflet({
-    #
     shapes <- shapes()
     
     if (input$filter_id == TRUE) {
