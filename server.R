@@ -237,34 +237,47 @@ shinyServer(function(input, output, session) {
     # admin only - allow writing target changes to local csv
     if (!is.null(write_status()) && write_status() == TRUE) {
       
+      responses_reactive <- reactiveVal()
+      responses_reactive(responses())
       
-      # listen for user edits to table and update target_table_reactive accordingly
+      # listen for user edits to table and update responses accordingly
       observeEvent(input$datatable_cell_edit, {
+        
         changed_row <- input$datatable_cell_edit$row
         changed_col <- input$datatable_cell_edit$col
         changed_val <- input$datatable_cell_edit$value
         changed_val <- ifelse(changed_val == "", NA, changed_val)
         
-        changed_responses <- responses()
-        
+        # make changes to reactive object with static intermediary
+        changed_responses <- responses_reactive()
         changed_responses[changed_row, changed_col] <- changed_val
+        responses_reactive(changed_responses)
         
-        # save table state to global object so additional changes can be made
+        # save table state to global object so changes can be written
         assign("changed_responses", changed_responses, envir = .GlobalEnv)
-        
-        # info for change log
-        changed_response_id <- responses()[[changed_row, "response_id"]]
-        original_val <- responses()[[changed_row, changed_col]]
         
       })
       
       # save_targets listener - overwrite source targets
       observeEvent(input$save_datatable_edits, {
+        
+        # update change log
+        make_change_log(
+          responses(),
+          responses_reactive(),
+          change_log,
+          current_user()
+        )
+        
         write_rds(changed_responses, "data/temp/responses.RDS")
         
         # rerender table on save
         output$datatable <- renderDataTable({
           make_datatable(responses = changed_responses)
+        })
+        
+        output$change_log_table <- renderDataTable({
+          datatable(change_log)
         })
       })
     }
@@ -339,6 +352,11 @@ shinyServer(function(input, output, session) {
     replaceData(corrections_proxy, new_corrections)
     
     write_rds(corrections(), "data/corrections.RDS")
+  })
+  
+  ## changelog ----
+  output$change_log_table <- renderDataTable({
+    datatable(change_log)
   })
   
   ## duplicates ----
@@ -479,7 +497,7 @@ shinyServer(function(input, output, session) {
   )
   
   
-  # reporting -----------------------------
+  # REPORTING -----------------------------
   
   output$reporting_totals_table <- renderDataTable(
     make_reporting_totals_table(

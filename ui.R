@@ -259,16 +259,11 @@ ui <- (dashboardPage(
                         )
                       ),
                       
-                      ## duplicates ----
-                      # tabPanel(
-                      #   title = "Duplicates",
-                      #   conditionalPanel(condition = "output.n_dups!='0'",
-                      #                    dataTableOutput("dup_table", width = "50%")),
-                      #   conditionalPanel(condition = "output.n_dups=='0'",
-                      #                    HTML(
-                      #                      paste0(br(), "No duplicate responses found")
-                      #                    ))
-                      # )
+                      # duplicates ----
+                      tabPanel(
+                        title = "Change Log",
+                        dataTableOutput("change_log_table")
+                      )
                     )
                   ))),
       
