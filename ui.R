@@ -187,12 +187,14 @@ ui <- (dashboardPage(
               ## main tab ----
               div(id = "dt-box",
                   shinydashboardPlus::box(
-                    title = "Ocean Use Survey Data",
+                    title = htmlOutput("datatable_title"),
                     width = 12,
                     headerBorder = FALSE,
                     dropdownMenu = shinydashboardPlus::boxDropdown(
-                      shinydashboardPlus::boxDropdownItem("Edit data", id = "edit_datatable"),
-                      shinydashboardPlus::boxDropdownItem("Save edits", id = "save_datatable_edits")
+                      shinydashboardPlus::boxDropdownItem(htmlOutput("edit_data_button"),
+                                                          id = "edit_datatable"),
+                      shinydashboardPlus::boxDropdownItem(htmlOutput("save_edits_button"),
+                                                          id = "save_datatable_edits")
                     ),
                     tabBox(
                       width = "100%",

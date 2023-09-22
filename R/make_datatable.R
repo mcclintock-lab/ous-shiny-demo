@@ -2,28 +2,43 @@
 
 
 # table for DT data explorer
-make_datatable <- function(responses) {
+make_datatable <- function(responses, edit_data_status) {
   # create df with desired columns
   response_table <- responses 
   
-  # output datatable object
-  table = datatable(
-    response_table,
-    filter = list(position = "top"),
-    plugins = "accent-neutralise",
-    editable = TRUE,
-    options = list(
-      pageLength = 50,
-      scrollX = TRUE,
-      scroller = TRUE,
-      lengthChange = FALSE
-    )
-  ) |> 
-    # removes row striping
-    formatStyle(
-      columns = -1:ncol(responses) + 1,
-      "box-shadow" = "inset 0 0 0 9999px rgba(0, 0, 0, 0)"
-    )
+  
+  if (edit_data_status == FALSE) {
+    
+    # output datatable object
+    table = datatable(
+      response_table,
+      filter = list(position = "top"),
+      plugins = "accent-neutralise",
+      editable = FALSE,
+      options = list(
+        pageLength = 50,
+        scrollX = TRUE,
+        scroller = TRUE,
+        lengthChange = FALSE
+      )
+    ) 
+    
+  } else {
+    
+    table = datatable(
+      response_table,
+      filter = list(position = "top"),
+      plugins = "accent-neutralise",
+      editable = TRUE,
+      selection = "none",
+      options = list(
+        pageLength = 50,
+        scrollX = TRUE,
+        scroller = TRUE,
+        lengthChange = FALSE
+      )
+    ) 
+  }
   
   return(table)
 }

@@ -12,7 +12,7 @@ shinyServer(function(input, output, session) {
     secure_server(check_credentials = check_credentials("auth/users.sqlite",
                                                         passphrase = passphrase))
   
-  # Create reactive admin status to determine privileges
+  # PRIVILEGES --------------------------------
   admin_status <- reactive({
     reactiveValuesToList(res_auth)$admin
   })
@@ -208,9 +208,36 @@ shinyServer(function(input, output, session) {
   
   # DATATABLE ----------------------------------------------
   
+  edit_data_status <- reactiveVal()
+  edit_data_status(FALSE)
+  
+  # conditional styling based on edit status
+  datatable_title_style <- reactiveVal()
+  edit_data_button <- reactiveVal()
+  save_edits_button <- reactiveVal()
+  save_data_button <- reactiveVal()
+  
+  observe({
+    if (edit_data_status() == FALSE) {
+      datatable_title_style("Ocean Use Survey Data")
+      edit_data_button("Edit data")
+      save_edits_button("<div style='color:#bababa'>Save edits</div>")
+      
+    } else {
+      datatable_title_style("<div style='color:red'>Ocean Use Survey Data - Editing</div>")
+      edit_data_button("Stop editing")
+      save_edits_button("Save edits")
+    }
+  })
+  
+  output$datatable_title <- renderText(datatable_title_style())
+  output$edit_data_button <- renderText(edit_data_button())
+  output$save_edits_button <- renderText(save_edits_button())
+  
   ## main table ----
   output$datatable <-
-    renderDataTable(expr = make_datatable(responses = responses()),
+    renderDataTable(expr = make_datatable(responses = responses(),
+                                          edit_data_status = edit_data_status()),
                     server = FALSE)
   
   ### view in map ----
@@ -232,10 +259,19 @@ shinyServer(function(input, output, session) {
     }
   })
   
+  # listen for datatable edit status
+  observeEvent(input$edit_datatable, {
+    
+    if (!is.null(write_status()) && write_status() == TRUE) {
+      
+      edit_data_status(!edit_data_status())
+    }
+  })
+  
   ### data editing ----
   observe({
-    # admin only - allow writing target changes to local csv
-    if (!is.null(write_status()) && write_status() == TRUE) {
+    
+    if (edit_data_status() == TRUE) {
       
       responses_reactive <- reactiveVal()
       responses_reactive(responses())
@@ -261,24 +297,29 @@ shinyServer(function(input, output, session) {
       # save_targets listener - overwrite source targets
       observeEvent(input$save_datatable_edits, {
         
-        # update change log
-        make_change_log(
-          responses(),
-          responses_reactive(),
-          change_log,
-          current_user()
-        )
-        
-        write_rds(changed_responses, "data/temp/responses.RDS")
-        
-        # rerender table on save
-        output$datatable <- renderDataTable({
-          make_datatable(responses = changed_responses)
-        })
-        
-        output$change_log_table <- renderDataTable({
-          datatable(change_log)
-        })
+        if (!is.null(input$datatable_cell_edit) && edit_data_status() == TRUE) {
+          
+          # update change log
+          make_change_log(
+            responses(),
+            responses_reactive(),
+            change_log,
+            current_user()
+          )
+          
+          write_rds(changed_responses, "data/temp/responses.RDS")
+          write_rds(change_log, "data/change_log.RDS")
+          
+          # rerender table on save
+          output$datatable <- renderDataTable({
+            make_datatable(responses = changed_responses,
+                           edit_data_status = edit_data_status())
+          })
+          
+          output$change_log_table <- renderDataTable({
+            datatable(change_log)
+          }) 
+        }
       })
     }
   })
