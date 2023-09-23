@@ -218,15 +218,23 @@ shinyServer(function(input, output, session) {
   save_data_button <- reactiveVal()
   
   observe({
-    if (edit_data_status() == FALSE) {
+    if (!is.null(write_status()) && write_status() == FALSE) {
       datatable_title_style("Ocean Use Survey Data")
-      edit_data_button("Edit data")
+      edit_data_button("<div style='color:#bababa'>Edit data</div>")
       save_edits_button("<div style='color:#bababa'>Save edits</div>")
       
     } else {
-      datatable_title_style("<div style='color:red'>Ocean Use Survey Data - Editing</div>")
-      edit_data_button("Stop editing")
-      save_edits_button("Save edits")
+      
+      if (edit_data_status() == FALSE) {
+        datatable_title_style("Ocean Use Survey Data")
+        edit_data_button("✏️ Edit data")
+        save_edits_button("<div style='color:#bababa'>◽️ Save edits</div>")
+        
+      } else {
+        datatable_title_style("<div style='color:orange'>Ocean Use Survey Data - Editing</div>")
+        edit_data_button("❌ Stop editing")
+        save_edits_button("💾 Save edits")
+      }
     }
   })
   
@@ -574,7 +582,6 @@ shinyServer(function(input, output, session) {
   # reporting table titles
   
   output$reporting_totals_title <- renderText("Totals")
-  
   output$reporting_by_sector_title <- renderText("By Sector")
   
   ## download CSVs ----
