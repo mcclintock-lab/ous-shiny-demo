@@ -50,6 +50,7 @@ ui <- (dashboardPage(
   dashboardBody(
     # javascript
     shinyjs::useShinyjs(),
+    # refresh button function
     shinyjs::extendShinyjs(text = "shinyjs.refresh_page = function() { location.reload(); }", functions = "refresh_page"),
     
     # STYLING ----
@@ -296,7 +297,7 @@ ui <- (dashboardPage(
                       size = "sm",
                     ),
                     
-                    # sector filter dropdown
+                    # region filter dropdown
                     pickerInput(
                       inputId = "map_regions",
                       label = "Regions: ",
