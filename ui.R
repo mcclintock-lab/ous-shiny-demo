@@ -6,9 +6,10 @@ ui <- (dashboardPage(
     tags$li(
       class = "dropdown",
       id = "disclaimer",
-      HTML(
-        "*This app contains <a id=generate-data-link target=_blank href='https://github.com/mcclintock-lab/ous-shiny-demo/blob/main/R/generate_data.R'>randomly generated data</a> solely for demonstration purposes"
-      )
+      # HTML(
+      #   "*This app contains <a id=generate-data-link target=_blank href='https://github.com/mcclintock-lab/ous-shiny-demo/blob/main/R/generate_data.R'>randomly generated data</a> solely for demonstration purposes"
+      # )
+      "*This app contains fabricated data purely for demonstration purposes"
     ),
     tags$li(
       class = "dropdown",
@@ -212,8 +213,7 @@ ui <- (dashboardPage(
                         ),
                         
                         dataTableOutput("datatable") |>
-                          withSpinner(type = 8)
-                        
+                          withSpinner(type = 8),
                       ),
                       
                       ## corrections ----

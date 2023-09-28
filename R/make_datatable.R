@@ -8,8 +8,7 @@ make_datatable <- function(responses, edit_data_status) {
   
   
   if (edit_data_status == FALSE) {
-    
-    # output datatable object
+
     table = datatable(
       response_table,
       filter = list(position = "top"),

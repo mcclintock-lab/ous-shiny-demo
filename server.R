@@ -251,8 +251,8 @@ shinyServer(function(input, output, session) {
   ### view in map ----
   observeEvent(input$dt_view_shapes, {
     if (is.null(input$datatable_rows_selected)) {
-      showNotification("Please select a response in the table to view on map",
-                       type = "error")
+      show_alert(title = "Please select a response in the table to view in map",
+                 type = "warning")
       
     } else {
       updateTabItems(inputId = "tabs", selected = "shapes")
@@ -277,9 +277,15 @@ shinyServer(function(input, output, session) {
   })
   
   ### data editing ----
+  datatable_proxy <- dataTableProxy(outputId = "datatable", session = session)
+  
   observe({
     
     if (edit_data_status() == TRUE) {
+      
+      # init latest_save - used for comparison in make_change_log()
+      latest_save <- reactiveVal()
+      latest_save(responses())
       
       responses_reactive <- reactiveVal()
       responses_reactive(responses())
@@ -290,26 +296,50 @@ shinyServer(function(input, output, session) {
         changed_row <- input$datatable_cell_edit$row
         changed_col <- input$datatable_cell_edit$col
         changed_val <- input$datatable_cell_edit$value
-        changed_val <- ifelse(changed_val == "", NA, changed_val)
         
-        # make changes to reactive object with static intermediary
-        changed_responses <- responses_reactive()
-        changed_responses[changed_row, changed_col] <- changed_val
-        responses_reactive(changed_responses)
-        
-        # save table state to global object so changes can be written
-        assign("changed_responses", changed_responses, envir = .GlobalEnv)
-        
+        # ensure logical variables conform
+        if (class(responses()[[changed_col]]) == "logical") {
+          
+          changed_val <- as.logical(changed_val)
+          
+          if (is.na(changed_val)) {
+            
+            show_alert(title = "This variable requires a value of 'true' or 'false'",
+                       type = "warning")
+            
+          } else {
+            
+            # make changes to reactive object with static intermediary
+            changed_responses <- responses_reactive()
+            changed_responses[changed_row, changed_col] <- changed_val
+            responses_reactive(changed_responses)
+            
+            # save table state to global object so changes can be written
+            assign("changed_responses", changed_responses, envir = .GlobalEnv)
+          }
+        } else {
+          
+          # make changes to reactive object with static intermediary
+          changed_responses <- responses_reactive()
+          changed_responses[changed_row, changed_col] <- changed_val
+          responses_reactive(changed_responses)
+          
+          # save table state to global object so changes can be written
+          assign("changed_responses", changed_responses, envir = .GlobalEnv)
+        }
       })
       
       # save_targets listener - overwrite source targets
       observeEvent(input$save_datatable_edits, {
         
-        if (!is.null(input$datatable_cell_edit) && edit_data_status() == TRUE) {
+        # save and update change log if changes have been made
+        if (!is.null(input$datatable_cell_edit) && edit_data_status() == TRUE 
+            && identical(responses_reactive(), latest_save()) == FALSE
+        ) {
           
           # update change log
           make_change_log(
-            responses(),
+            latest_save(),
             responses_reactive(),
             change_log,
             current_user()
@@ -317,6 +347,8 @@ shinyServer(function(input, output, session) {
           
           write_rds(changed_responses, "data/temp/responses.RDS")
           write_rds(change_log, "data/change_log.RDS")
+          
+          latest_save(responses_reactive())
           
           # rerender table on save
           output$datatable <- renderDataTable({
@@ -349,8 +381,8 @@ shinyServer(function(input, output, session) {
   observeEvent(input$submit_correction, {
     
     if (is.na(input$corrections_response_id) | input$corrections_text == "") {
-      showNotification("Please enter a valid response ID and comment",
-                       type = "error")
+      show_alert(title = "Please enter a valid response ID and comment",
+                 type = "warning")
     } else {
       new_entry <- data.frame(
         response_id = input$corrections_response_id,

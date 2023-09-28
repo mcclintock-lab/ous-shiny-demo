@@ -20,14 +20,16 @@ make_change_log <- function(df1, df2, current_log, user) {
   
   for (i in nrow(diff_indexes):1) {
     
-    orig_values <- c(df1[[diff_indexes$row[i], diff_indexes$col[i]]], orig_values)
+    orig_values <- c(df1[[diff_indexes$row[i], diff_indexes$col[i]]], orig_values) |> 
+      as.character()
   }
   
   new_values <- c()
   
   for (i in nrow(diff_indexes):1) {
     
-    new_values <- c(df2[[diff_indexes$row[i], diff_indexes$col[i]]], new_values)
+    new_values <- c(df2[[diff_indexes$row[i], diff_indexes$col[i]]], new_values) |> 
+      as.character()
   }
   
   diff_log <- tibble(
@@ -39,8 +41,7 @@ make_change_log <- function(df1, df2, current_log, user) {
     "user" = user
   )
   
-  combined_log <- bind_rows(current_log, diff_log) |> 
-    distinct()
+  combined_log <- bind_rows(current_log, diff_log)
   
   assign("change_log", combined_log, envir = .GlobalEnv)
 
