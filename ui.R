@@ -211,9 +211,9 @@ ui <- (dashboardPage(
                           size = "sm",
                           icon = icon("map")
                         ),
-                        
+
                         dataTableOutput("datatable") |>
-                          withSpinner(type = 8),
+                          withSpinner(type = 8)
                       ),
                       
                       ## corrections ----
@@ -262,10 +262,13 @@ ui <- (dashboardPage(
                         )
                       ),
                       
-                      # duplicates ----
+                      ## change log ----
                       tabPanel(
                         title = "Change Log",
-                        dataTableOutput("change_log_table")
+                        box(
+                          width = 12,
+                          dataTableOutput("change_log_table")
+                        )
                       )
                     )
                   ))),

@@ -329,7 +329,7 @@ shinyServer(function(input, output, session) {
         }
       })
       
-      # save_targets listener - overwrite source targets
+      # save_datatable_edits listener - overwrite source targets
       observeEvent(input$save_datatable_edits, {
         
         # save and update change log if changes have been made
@@ -357,7 +357,7 @@ shinyServer(function(input, output, session) {
           })
           
           output$change_log_table <- renderDataTable({
-            datatable(change_log)
+            make_change_log_table(change_log = change_log)
           }) 
         }
       })
@@ -437,7 +437,7 @@ shinyServer(function(input, output, session) {
   
   ## changelog ----
   output$change_log_table <- renderDataTable({
-    datatable(change_log)
+    make_change_log_table(change_log = change_log)
   })
   
   ## duplicates ----

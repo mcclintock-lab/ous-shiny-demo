@@ -33,7 +33,7 @@ make_change_log <- function(df1, df2, current_log, user) {
   }
   
   diff_log <- tibble(
-    "datetime" = as.character(Sys.Date()),
+    "datetime" = as.character(now() |> substr(1, 19)),
     "response_id" = as.character(diff_ids),
     "edited_field" = edited_fields,
     "original_value" = orig_values,
@@ -46,3 +46,23 @@ make_change_log <- function(df1, df2, current_log, user) {
   assign("change_log", combined_log, envir = .GlobalEnv)
 
 }
+
+make_change_log_table <- function(change_log) {
+  
+    table <- datatable(
+      change_log,
+      colnames = c("datetime", "response_id", "edited_field", "original_value", "new_value", "user"),
+      escape = FALSE,
+      options = list(
+        pageLength = 50,
+        dom = "t",
+        columnDefs = list(list(
+          className = 'dt-center', targets = 1
+        ))
+      )
+    )
+    
+    return(table)
+}
+
+

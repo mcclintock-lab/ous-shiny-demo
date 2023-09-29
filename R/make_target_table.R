@@ -155,7 +155,7 @@ make_target_table <- function(responses) {
   # red-ylw-grn color ramp styling for target progress
   breaks <- seq(0, 1, 0.01)
   colors <-
-    colorRampPalette(c("#FFD1C2", "#FCFACE", "#EAFCEC"))(length(breaks) + 1)
+    colorRampPalette(c("white", "#EAFCEC"))(length(breaks) + 1)
   
   target_table <-
     datatable(
