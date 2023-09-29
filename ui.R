@@ -208,7 +208,7 @@ ui <- (dashboardPage(
                           "dt_view_shapes",
                           "View in Map",
                           style = "simple",
-                          size = "sm",
+                          # size = "sm",
                           icon = icon("map")
                         ),
 
@@ -245,14 +245,14 @@ ui <- (dashboardPage(
                               "mark_fixed",
                               "Mark fixed",
                               style = "simple",
-                              size = "md",
+                              size = "sm",
                               icon = icon("check")
                             ),
                             actionBttn(
                               "submit_correction",
                               "Submit new ",
                               style = "simple",
-                              size = "md",
+                              size = "sm",
                               icon = icon("plus")
                             )
                           )),
@@ -278,17 +278,19 @@ ui <- (dashboardPage(
               
               fluidRow(
                 div(
+                  id = "shape-viewer-box",
                   class = "col-sm-12 col-md-12 col-lg-4",
                   
-                  box(
-                    width = "100%",
+                  shinydashboardPlus::box(
+                    title = "Shape Viewer",
+                    width = 12,
                     
                     # clear filters
                     actionBttn(
                       "clear_shape_filters",
                       "Clear Map & Filters",
                       style = "simple",
-                      size = "sm",
+                      # size = "sm",
                       icon = icon("refresh")
                     ),
                     
@@ -297,7 +299,7 @@ ui <- (dashboardPage(
                       "download_filtered_shapes",
                       "Export Current Shapes",
                       style = "simple",
-                      size = "sm",
+                      # size = "sm",
                     ),
                     
                     # region filter dropdown
