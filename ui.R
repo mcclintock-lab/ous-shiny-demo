@@ -107,13 +107,13 @@ ui <- (dashboardPage(
               
               # value boxes with response and representation figures
               div(class = "col-sm-4 col-md-4 col-lg-4",
-                  valueBoxOutput("num_respondents", width = "33%")),
+                  valueBoxOutput("individual_respondents", width = "33%")),
               
               div(class = "col-sm-4 col-md-4 col-lg-4",
-                  valueBoxOutput("num_rep", width = "33%")),
+                  valueBoxOutput("individuals_represented", width = "33%")),
               
               div(class = "col-sm-4 col-md-4 col-lg-4",
-                  valueBoxOutput("sec_resp", width = "33%"))
+                  valueBoxOutput("sector_responses", width = "33%"))
             )
           ),
           
@@ -211,9 +211,25 @@ ui <- (dashboardPage(
                           # size = "sm",
                           icon = icon("map")
                         ),
-
+                        # download shapes
+                        downloadBttn(
+                          "download_responses",
+                          "Download",
+                          style = "simple",
+                          # size = "sm",
+                        ),
+                        
                         dataTableOutput("datatable") |>
                           withSpinner(type = 8)
+                      ),
+                      
+                      ## change log ----
+                      tabPanel(
+                        title = "Change Log",
+                        box(
+                          width = 12,
+                          dataTableOutput("change_log_table")
+                        )
                       ),
                       
                       ## corrections ----
@@ -227,7 +243,7 @@ ui <- (dashboardPage(
                           "Response ID:",
                           NA,
                           width = "25%"
-                          ),
+                        ),
                         textAreaInput(
                           "corrections_text",
                           "Corrections to be made:",
@@ -260,18 +276,14 @@ ui <- (dashboardPage(
                           
                           dataTableOutput("corrections_table")
                         )
-                      ),
-                      
-                      ## change log ----
-                      tabPanel(
-                        title = "Change Log",
-                        box(
-                          width = 12,
-                          dataTableOutput("change_log_table")
-                        )
                       )
                     )
-                  ))),
+                  )),
+              # text to extend page beneath box until that styling bug is fixed
+              div(style = "color: #F3F4F6",
+                  "-"
+              )
+      ),
       
       # SHAPE VIEWER --------------------------------------------------------
       tabItem(tabName = "shapes",

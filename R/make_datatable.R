@@ -17,7 +17,7 @@ make_datatable <- function(responses, edit_data_status) {
       options = list(
         pageLength = 50,
         scrollX = TRUE,
-        scroller = TRUE,
+        # scroller = TRUE,
         lengthChange = FALSE
       )
     ) 
@@ -83,8 +83,10 @@ make_corrections_table <- function(corrections) {
     colnames = c("Response ID", "Correction", "User", "Date", "Fixed"),
     escape = FALSE,
     options = list(
-      pageLength = 50,
+      pageLength = 10,
       dom = "t",
+      scrollX = TRUE,
+      scrollY = TRUE,
       columnDefs = list(list(
         className = 'dt-center', targets = 1
       ))

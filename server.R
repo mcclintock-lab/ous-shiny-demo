@@ -86,28 +86,32 @@ shinyServer(function(input, output, session) {
   })
   
   # number respondents box
-  output$num_respondents <- renderValueBox({
+  output$individual_respondents <- renderValueBox({
     valueBox(
-      nrow(respondent_info()),
+      length(unique(responses()$response_id)),
       HTML(paste0("Individual", br(), "Respondents")),
       icon = icon("user", class = "fa-solid fa-user")
     )
   })
   
   # number represented box
-  output$num_rep <- renderValueBox({
+  output$individuals_represented <- renderValueBox({
     valueBox(
-      sum(respondent_info()$max_rep),
+      (responses() |> 
+         group_by(response_id) |> 
+         mutate(n_rep = max(n_rep)))$n_rep |> 
+        sum(),
       HTML(paste0("Individuals", br(), "Represented")),
       icon = icon("users")
     )
   })
   
   # sector responses box
-  output$sec_resp <- renderValueBox({
-    valueBox(nrow(responses()),
-             HTML(paste0("Sector", br(), "Responses")),
-             icon = icon("water")
+  output$sector_responses <- renderValueBox({
+    valueBox(
+      nrow(responses()),
+      HTML(paste0("Sector", br(), "Responses")),
+      icon = icon("water")
     )
   })
   
@@ -267,6 +271,8 @@ shinyServer(function(input, output, session) {
     }
   })
   
+  ### data editing ----
+  
   # listen for datatable edit status
   observeEvent(input$edit_datatable, {
     
@@ -281,14 +287,12 @@ shinyServer(function(input, output, session) {
   responses_reactive <- reactiveVal()
   
   observe({
-    # used to store latest save state for comparison with responses_reactive()
+    # used to store latest save state for comparison with responses_reactive() and downloading
     latest_save(responses())
     # used to store current state of table edits
     responses_reactive(responses())
   })
   
-  
-  ### data editing ----
   datatable_proxy <- dataTableProxy(outputId = "datatable", session = session)
   
   observe({
@@ -369,6 +373,16 @@ shinyServer(function(input, output, session) {
     }
   })
   
+  ### data download ----
+  output$download_responses <- downloadHandler(
+    filename = function() {
+      paste0(project, "processed_ous_responses_", data_update_ymd, ".csv")
+    },
+    content = function(file) {
+      write_csv(latest_save(), file)
+    }
+  )
+  
   ## corrections ----
   
   corrections_data <- read_rds("data/corrections.RDS") |> 
@@ -393,7 +407,7 @@ shinyServer(function(input, output, session) {
         response_id = input$corrections_response_id,
         correction = input$corrections_text,
         user = ifelse(class(current_user()) == "character", current_user(), NA),
-        date = now(),
+        date = as.character(now() |> substr(1, 19)),
         fixed = "⬜️"
       )
       

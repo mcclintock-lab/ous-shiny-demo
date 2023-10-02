@@ -223,8 +223,21 @@ html, body {
   #dt_view_shapes {
    margin-top: 10px;
    margin-bottom: 0px;
+   margin-right: 10px;
    background-color: #00A6E1;
    color: white;
+   height: 25px;
+   font-size: 11pt;
+   padding-top: 0px;
+   padding-bottom: 0px;
+   padding-left: 8px;
+   padding-right: 8px;
+ }
+ 
+ #download_responses_bttn {
+   background-color: #00A6E1;
+   color: white;
+   margin-bottom: 20px;
    height: 25px;
    font-size: 11pt;
    padding-top: 0px;
@@ -243,8 +256,9 @@ html, body {
  
  #dt-box {
    max-width: 1400px !important;
+   /*overflow-x: scroll !important;*/
  }
- 
+
   #submit_correction {
    background-color: #00A6E1;
    color: white;

@@ -54,8 +54,10 @@ make_change_log_table <- function(change_log) {
       colnames = c("datetime", "response_id", "edited_field", "original_value", "new_value", "user"),
       escape = FALSE,
       options = list(
-        pageLength = 50,
+        pageLength = 10,
         dom = "t",
+        scrollX = TRUE,
+        scrollY = TRUE,
         language = list(emptyTable = "No changes yet"),
         columnDefs = list(list(
           className = 'dt-center', targets = 1
