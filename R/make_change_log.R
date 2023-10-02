@@ -56,6 +56,7 @@ make_change_log_table <- function(change_log) {
       options = list(
         pageLength = 50,
         dom = "t",
+        language = list(emptyTable = "No changes yet"),
         columnDefs = list(list(
           className = 'dt-center', targets = 1
         ))

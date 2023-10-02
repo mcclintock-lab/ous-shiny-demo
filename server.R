@@ -276,19 +276,24 @@ shinyServer(function(input, output, session) {
     }
   })
   
+  # init reactive objects
+  latest_save <- reactiveVal()
+  responses_reactive <- reactiveVal()
+  
+  observe({
+    # used to store latest save state for comparison with responses_reactive()
+    latest_save(responses())
+    # used to store current state of table edits
+    responses_reactive(responses())
+  })
+  
+  
   ### data editing ----
   datatable_proxy <- dataTableProxy(outputId = "datatable", session = session)
   
   observe({
     
     if (edit_data_status() == TRUE) {
-      
-      # init latest_save - used for comparison in make_change_log()
-      latest_save <- reactiveVal()
-      latest_save(responses())
-      
-      responses_reactive <- reactiveVal()
-      responses_reactive(responses())
       
       # listen for user edits to table and update responses accordingly
       observeEvent(input$datatable_cell_edit, {
@@ -328,39 +333,39 @@ shinyServer(function(input, output, session) {
           assign("changed_responses", changed_responses, envir = .GlobalEnv)
         }
       })
+    }
+  })
+  
+  # save_datatable_edits listener - writes changes to responses.RDS and adds to change log
+  observeEvent(input$save_datatable_edits, {
+    
+    # save and update change log if changes have been made
+    if (!is.null(input$datatable_cell_edit) && edit_data_status() == TRUE 
+        && identical(responses_reactive(), latest_save()) == FALSE
+    ) {
       
-      # save_datatable_edits listener - overwrite source targets
-      observeEvent(input$save_datatable_edits, {
-        
-        # save and update change log if changes have been made
-        if (!is.null(input$datatable_cell_edit) && edit_data_status() == TRUE 
-            && identical(responses_reactive(), latest_save()) == FALSE
-        ) {
-          
-          # update change log
-          make_change_log(
-            latest_save(),
-            responses_reactive(),
-            change_log,
-            current_user()
-          )
-          
-          write_rds(changed_responses, "data/temp/responses.RDS")
-          write_rds(change_log, "data/change_log.RDS")
-          
-          latest_save(responses_reactive())
-          
-          # rerender table on save
-          output$datatable <- renderDataTable({
-            make_datatable(responses = changed_responses,
-                           edit_data_status = edit_data_status())
-          })
-          
-          output$change_log_table <- renderDataTable({
-            make_change_log_table(change_log = change_log)
-          }) 
-        }
+      # update change log
+      make_change_log(
+        latest_save(),
+        responses_reactive(),
+        change_log,
+        current_user()
+      )
+      
+      write_rds(changed_responses, "data/temp/responses.RDS")
+      write_rds(change_log, "data/change_log.RDS")
+      
+      latest_save(changed_responses)
+      
+      # rerender table on save
+      output$datatable <- renderDataTable({
+        make_datatable(responses = changed_responses,
+                       edit_data_status = edit_data_status())
       })
+      
+      output$change_log_table <- renderDataTable({
+        make_change_log_table(change_log = change_log)
+      }) 
     }
   })
   
