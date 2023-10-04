@@ -17,7 +17,6 @@ make_datatable <- function(responses, edit_data_status) {
       options = list(
         pageLength = 50,
         scrollX = TRUE,
-        # scroller = TRUE,
         lengthChange = FALSE
       )
     ) 
@@ -28,7 +27,7 @@ make_datatable <- function(responses, edit_data_status) {
       response_table,
       filter = list(position = "top"),
       plugins = "accent-neutralise",
-      editable = TRUE,
+      editable = list(target='cell', disable = list(columns = c(2,3,5))),
       selection = "none",
       options = list(
         pageLength = 50,

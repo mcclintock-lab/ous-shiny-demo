@@ -114,6 +114,13 @@ if (n_new_responses != 0) {
   
   new_respondent_info <- new_respondent_info %>% 
     left_join(max_rep)
+  
+  # bind new and old responses
+  respondent_info <- existing_local_respondent_info |> 
+    bind_rows(new_respondent_info)
+  
+  responses <- existing_local_responses |> 
+    bind_rows(new_responses)
 
 # clean shapes ----
 
@@ -144,13 +151,6 @@ eez <- read_sf("data/california-eez.fgb") |>
   st_make_valid()
 
 shapes <- st_intersection(shapes, eez)
-
-# bind new and old responses
-respondent_info <- existing_local_respondent_info |> 
-  bind_rows(new_respondent_info)
-
-responses <- existing_local_responses |> 
-  bind_rows(new_responses)
 
 # write temporary files ----
 

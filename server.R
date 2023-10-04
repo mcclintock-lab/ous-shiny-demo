@@ -290,7 +290,12 @@ shinyServer(function(input, output, session) {
     if (!is.null(write_status()) && write_status() == TRUE) {
       
       edit_data_status(!edit_data_status())
-      responses_reactive(latest_save())
+      
+      # revert responses_reactive to latest save state when exiting edit mode
+      if (edit_data_status() == FALSE) {
+        
+        responses_reactive(latest_save())
+      }
     }
   })
   
