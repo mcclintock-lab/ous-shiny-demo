@@ -273,15 +273,6 @@ shinyServer(function(input, output, session) {
   
   ### data editing ----
   
-  # listen for datatable edit status
-  observeEvent(input$edit_datatable, {
-    
-    if (!is.null(write_status()) && write_status() == TRUE) {
-      
-      edit_data_status(!edit_data_status())
-    }
-  })
-  
   # init reactive objects
   latest_save <- reactiveVal()
   responses_reactive <- reactiveVal()
@@ -293,39 +284,37 @@ shinyServer(function(input, output, session) {
     responses_reactive(responses())
   })
   
-  datatable_proxy <- dataTableProxy(outputId = "datatable", session = session)
+  # listen for datatable edit status
+  observeEvent(input$edit_datatable, {
+    
+    if (!is.null(write_status()) && write_status() == TRUE) {
+      
+      edit_data_status(!edit_data_status())
+      responses_reactive(latest_save())
+    }
+  })
   
-  observe({
+  # listen for user edits to table and update responses accordingly
+  observeEvent(input$datatable_cell_edit, {
     
     if (edit_data_status() == TRUE) {
       
-      # listen for user edits to table and update responses accordingly
-      observeEvent(input$datatable_cell_edit, {
+      print("data table edit input")
+      
+      changed_row <- input$datatable_cell_edit$row
+      changed_col <- input$datatable_cell_edit$col
+      changed_val <- input$datatable_cell_edit$value
+      
+      # ensure logical variables conform
+      if (class(responses()[[changed_col]]) == "logical") {
         
-        changed_row <- input$datatable_cell_edit$row
-        changed_col <- input$datatable_cell_edit$col
-        changed_val <- input$datatable_cell_edit$value
+        changed_val <- as.logical(changed_val)
         
-        # ensure logical variables conform
-        if (class(responses()[[changed_col]]) == "logical") {
+        if (is.na(changed_val)) {
           
-          changed_val <- as.logical(changed_val)
+          show_alert(title = "This variable requires a value of 'true' or 'false'",
+                     type = "warning")
           
-          if (is.na(changed_val)) {
-            
-            show_alert(title = "This variable requires a value of 'true' or 'false'",
-                       type = "warning")
-            
-          } else {
-            
-            # make changes to reactive object with static intermediary
-            changed_responses <- responses_reactive()
-            changed_responses[changed_row, changed_col] <- changed_val
-            responses_reactive(changed_responses)
-            
-            # save table state to global object so changes can be written
-            assign("changed_responses", changed_responses, envir = .GlobalEnv)
-          }
         } else {
           
           # make changes to reactive object with static intermediary
@@ -336,7 +325,16 @@ shinyServer(function(input, output, session) {
           # save table state to global object so changes can be written
           assign("changed_responses", changed_responses, envir = .GlobalEnv)
         }
-      })
+      } else {
+        
+        # make changes to reactive object with static intermediary
+        changed_responses <- responses_reactive()
+        changed_responses[changed_row, changed_col] <- changed_val
+        responses_reactive(changed_responses)
+        
+        # save table state to global object so changes can be written
+        assign("changed_responses", changed_responses, envir = .GlobalEnv)
+      }
     }
   })
   
