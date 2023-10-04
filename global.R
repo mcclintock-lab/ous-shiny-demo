@@ -39,6 +39,9 @@ data_update <-
 # data update in ymd format for exported file names
 data_update_ymd <- gsub(" .*", "", as.character(temp_data_date))
 
+# shape-specific attributes you want to keep in the data editing process
+shape_specific_attributes <- NULL
+
 # load temp data files if data_prep.R was run since last data download
 if (temp_data_date >= data_update) {
   responses <- read_rds(here("data/temp/responses.RDS"))

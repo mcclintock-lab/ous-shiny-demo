@@ -59,6 +59,11 @@ shinyServer(function(input, output, session) {
   )
   
   shapes <- reactive(shapes_reader())
+  shapes_for_viewer <- reactiveVal()
+  
+  observe({
+    shapes_for_viewer(shapes())
+  })
   
   # data update datetime
   data_update_reader <- reactiveFileReader(
@@ -276,12 +281,15 @@ shinyServer(function(input, output, session) {
   # init reactive objects
   latest_save <- reactiveVal()
   responses_reactive <- reactiveVal()
+  shapes_reactive <- reactiveVal()
   
   observe({
     # used to store latest save state for comparison with responses_reactive() and downloading
     latest_save(responses())
     # used to store current state of table edits
     responses_reactive(responses())
+    # used to store current state of shape edits
+    shapes_reactive(shapes())
   })
   
   # listen for datatable edit status
@@ -291,7 +299,7 @@ shinyServer(function(input, output, session) {
       
       edit_data_status(!edit_data_status())
       
-      # revert responses_reactive to latest save state when exiting edit mode
+      # revert responses_reactive to latest save state when edit status changes to FALSE
       if (edit_data_status() == FALSE) {
         
         responses_reactive(latest_save())
@@ -304,11 +312,11 @@ shinyServer(function(input, output, session) {
     
     if (edit_data_status() == TRUE) {
       
-      print("data table edit input")
-      
       changed_row <- input$datatable_cell_edit$row
       changed_col <- input$datatable_cell_edit$col
       changed_val <- input$datatable_cell_edit$value
+      changed_response_id <- responses_reactive()[[changed_row, "response_id"]]
+      sector_changed <- changed_col == which(names(responses()) == "sector")
       
       # ensure logical variables conform
       if (class(responses()[[changed_col]]) == "logical") {
@@ -326,19 +334,23 @@ shinyServer(function(input, output, session) {
           changed_responses <- responses_reactive()
           changed_responses[changed_row, changed_col] <- changed_val
           responses_reactive(changed_responses)
-          
-          # save table state to global object so changes can be written
-          assign("changed_responses", changed_responses, envir = .GlobalEnv)
         }
       } else {
+        
+        if (sector_changed == TRUE) {
+          
+          changed_shapes <- shapes_reactive()
+          original_sector <- latest_save()[[changed_row, changed_col]] 
+          shapes_changed_row <- which(changed_shapes$response_id == changed_response_id &
+                                        changed_shapes$sector == original_sector)
+          changed_shapes[shapes_changed_row, "sector"] <- changed_val
+          shapes_reactive(changed_shapes)
+        }
         
         # make changes to reactive object with static intermediary
         changed_responses <- responses_reactive()
         changed_responses[changed_row, changed_col] <- changed_val
         responses_reactive(changed_responses)
-        
-        # save table state to global object so changes can be written
-        assign("changed_responses", changed_responses, envir = .GlobalEnv)
       }
     }
   })
@@ -359,20 +371,31 @@ shinyServer(function(input, output, session) {
         current_user()
       )
       
-      write_rds(changed_responses, "data/temp/responses.RDS")
+      write_rds(responses_reactive(), "data/temp/responses.RDS")
       write_rds(change_log, "data/change_log.RDS")
       
-      latest_save(changed_responses)
+      latest_save(responses_reactive())
       
       # rerender table on save
       output$datatable <- renderDataTable({
-        make_datatable(responses = changed_responses,
+        make_datatable(responses = responses_reactive(),
                        edit_data_status = edit_data_status())
       })
       
       output$change_log_table <- renderDataTable({
         make_change_log_table(change_log = change_log)
       }) 
+      
+      # update shapes
+      changed_shapes <- shapes_reactive() |> 
+        select(response_id, sector, all_of(shape_specific_attributes)) |> 
+        right_join(responses_reactive(),
+                   by = c("response_id", "sector"))
+      
+      shapes_reactive(changed_shapes)
+      shapes_for_viewer(changed_shapes)
+      
+      write_rds(changed_shapes, "data/temp/shapes.RDS")
     }
   })
   
@@ -472,7 +495,7 @@ shinyServer(function(input, output, session) {
   # SHAPE VIEWER -------------------------------------------------
   
   output$map <- renderLeaflet({
-    shapes <- shapes()
+    shapes <- shapes_for_viewer()
     
     if (input$filter_id == TRUE) {
       # parse user input for filter by response_id
