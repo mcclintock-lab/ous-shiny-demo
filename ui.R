@@ -219,8 +219,7 @@ ui <- (dashboardPage(
                           # size = "sm",
                         ),
                         
-                        dataTableOutput("datatable") |>
-                          withSpinner(type = 8)
+                        dataTableOutput("datatable")
                       ),
                       
                       ## change log ----

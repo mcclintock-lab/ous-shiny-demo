@@ -277,7 +277,7 @@ shinyServer(function(input, output, session) {
   })
   
   ### data editing ----
-  
+    
   # init reactive objects
   latest_save <- reactiveVal()
   responses_reactive <- reactiveVal()
@@ -338,6 +338,13 @@ shinyServer(function(input, output, session) {
       } else {
         
         if (sector_changed == TRUE) {
+          
+          if (!changed_val %in% sector_ids$sector) {
+            
+            show_alert(title = "That sector is not recognized",
+                       text = "Please check spelling, punctuation, and capitalization",
+                       type = "warning")
+          }
           
           changed_shapes <- shapes_reactive()
           original_sector <- latest_save()[[changed_row, changed_col]] 
