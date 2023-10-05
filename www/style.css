@@ -256,7 +256,7 @@ html, body {
  
  #dt-box {
    max-width: 1400px !important;
-   /*overflow-x: scroll !important;*/
+   overflow-x: auto !important;
  }
 
   #submit_correction {

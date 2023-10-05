@@ -277,10 +277,7 @@ ui <- (dashboardPage(
                         )
                       )
                     )
-                  )),
-              # text to extend page beneath box until that styling bug is fixed
-              div(style = "color: #F3F4F6",
-                  "-"
+                  )
               )
       ),
       
