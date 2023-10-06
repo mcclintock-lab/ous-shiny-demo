@@ -499,24 +499,40 @@ shinyServer(function(input, output, session) {
   })
   
   # mark entry as fixed
-  observeEvent(input$mark_fixed, {
-    selected_rows <- input$corrections_table_rows_selected
+  observeEvent(input$toggle_fixed, {
     
-    new_corrections <- corrections()
-    
-    for (i in seq_along(selected_rows)) {
-      if (new_corrections$fixed[selected_rows[i]] == "⬜️") {
-        new_corrections$fixed[selected_rows[i]] <- "✅"
-      } else {
-        new_corrections$fixed[selected_rows[i]] <- "⬜️"
+    if (!is.null(write_status()) && write_status() == TRUE) {
+      
+      selected_rows <- input$corrections_table_rows_selected
+      
+      new_corrections <- corrections()
+      
+      for (i in seq_along(selected_rows)) {
+        if (new_corrections$fixed[selected_rows[i]] == "⬜️") {
+          new_corrections$fixed[selected_rows[i]] <- "✅"
+        } else {
+          new_corrections$fixed[selected_rows[i]] <- "⬜️"
+        }
       }
+      
+      corrections(new_corrections)
+      
+      replaceData(corrections_proxy, new_corrections)
+      
+      write_rds(corrections(), "data/corrections.RDS")
     }
-    
-    corrections(new_corrections)
-    
-    replaceData(corrections_proxy, new_corrections)
-    
-    write_rds(corrections(), "data/corrections.RDS")
+  })
+  
+  # button styling
+  observe({
+    if (!is.null(write_status()) && write_status() == FALSE) {
+
+      output$toggle_fixed_button <- renderText("<div style='color:#bababa'>◽ Toggle fixed</div>")
+      
+    } else {
+      
+      output$toggle_fixed_button <- renderText("✅ Toggle fixed")
+    }
   })
   
   ## changelog ----

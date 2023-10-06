@@ -277,12 +277,6 @@ html, body {
    margin-right: 15px;
  }
  
-  #mark_fixed {
-   background-color: #00A6E1;
-   color: white;
-   float: right;
- }
- 
  /* ---- shape viewer page ---- */
  #map {
    height: calc(80vh) !important;

@@ -239,8 +239,6 @@ ui <- (dashboardPage(
                         
                         box(
                           width = 12,
-                          # width = 12,
-                          # headerBorder = FALSE,
                           numericInput(
                             "corrections_response_id",
                             "Response ID:",
@@ -269,15 +267,12 @@ ui <- (dashboardPage(
                         
                         shinydashboardPlus::box(
                           id = "corrections_box",
+                          dropdownMenu = shinydashboardPlus::boxDropdown(
+                            shinydashboardPlus::boxDropdownItem(
+                              htmlOutput("toggle_fixed_button"),
+                              id = "toggle_fixed")),
                           title = p(div(
                             id = "corrections_title",
-                            actionBttn(
-                              "mark_fixed",
-                              "Mark fixed",
-                              style = "simple",
-                              size = "sm",
-                              icon = icon("check")
-                            ),
                             actionBttn(
                               "submit_correction",
                               "Submit new ",
