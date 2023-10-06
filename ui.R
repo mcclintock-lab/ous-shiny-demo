@@ -237,17 +237,32 @@ ui <- (dashboardPage(
                         
                         tags$br(),
                         
-                        numericInput(
-                          "corrections_response_id",
-                          "Response ID:",
-                          NA,
-                          width = "25%"
-                        ),
-                        textAreaInput(
-                          "corrections_text",
-                          "Corrections to be made:",
-                          resize = "vertical",
-                          width = "50%"
+                        box(
+                          width = 12,
+                          # width = 12,
+                          # headerBorder = FALSE,
+                          numericInput(
+                            "corrections_response_id",
+                            "Response ID:",
+                            NA,
+                            width = "25%"
+                          ),
+                          div(
+                            id = "corrections-text-input",
+                            textAreaInput(
+                              "corrections_text",
+                              "Corrections to be made:",
+                              resize = "vertical"
+                            )
+                          ),
+                          div(
+                            id = "corrections-reason-input",
+                            textAreaInput(
+                              "corrections_reason",
+                              "Reason for correction:",
+                              resize = "vertical"
+                            )
+                          )
                         ),
                         
                         tags$br(),

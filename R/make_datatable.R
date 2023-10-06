@@ -79,7 +79,7 @@ make_dups_table <- function() {
 make_corrections_table <- function(corrections) {
   table <- datatable(
     corrections,
-    colnames = c("Response ID", "Correction", "User", "Date", "Fixed"),
+    colnames = c("Response ID", "Correction", "Reason", "User", "Date", "Fixed"),
     escape = FALSE,
     options = list(
       pageLength = 10,

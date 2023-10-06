@@ -459,13 +459,16 @@ shinyServer(function(input, output, session) {
   # submit new correction
   observeEvent(input$submit_correction, {
     
-    if (is.na(input$corrections_response_id) | input$corrections_text == "") {
-      show_alert(title = "Please enter a valid response ID and comment",
+    if (is.na(input$corrections_response_id) | 
+        input$corrections_text == "" |
+        input$corrections_reason == "") {
+      show_alert(title = "Please enter a valid response ID, correction, and reason",
                  type = "warning")
     } else {
       new_entry <- data.frame(
         response_id = input$corrections_response_id,
         correction = input$corrections_text,
+        reason = input$corrections_reason,
         user = ifelse(class(current_user()) == "character", current_user(), NA),
         date = as.character(now() |> substr(1, 19)),
         fixed = "⬜️"
@@ -484,6 +487,8 @@ shinyServer(function(input, output, session) {
         updateNumericInput(inputId = "corrections_response_id",
                            value = numeric(0))
         updateTextAreaInput(inputId = "corrections_text",
+                            value = character(0))
+        updateTextAreaInput(inputId = "corrections_reason",
                             value = character(0))
       } else {
         show_alert("The submitted response ID doesn't exist in the dataset",
