@@ -76,26 +76,56 @@ make_dups_table <- function() {
 }
 
 # data corrections table
-make_corrections_table <- function(corrections) {
-  table <- datatable(
-    corrections,
-    colnames = c("Response ID", "Correction", "Reason", "User", "Date", "Fixed"),
-    escape = FALSE,
-    options = list(
-      pageLength = 10,
-      dom = "t",
-      scrollX = TRUE,
-      scrollY = TRUE,
-      columnDefs = list(list(
-        className = 'dt-center', targets = 1
-      ))
-    )
-  ) |>
-    formatStyle(
-      columns = 0:ncol(corrections),
-      valueColumns = "fixed",
-      backgroundColor = styleEqual("✅", "#dbf5d7")
-    )
+make_corrections_table <- function(corrections, edit_data_status) {
   
-  return(table)
+  if (edit_data_status == FALSE) {
+    
+    table <- datatable(
+      corrections,
+      colnames = c("Response ID", "Correction", "Reason", "User", "Date", "Fixed"),
+      escape = FALSE,
+      options = list(
+        pageLength = 10,
+        dom = "t",
+        scrollX = TRUE,
+        scrollY = TRUE,
+        columnDefs = list(list(
+          className = 'dt-center', targets = 1
+        ))
+      )
+    ) |>
+      formatStyle(
+        columns = 0:ncol(corrections),
+        valueColumns = "fixed",
+        backgroundColor = styleEqual("✅", "#dbf5d7")
+      )
+    
+    return(table)
+    
+  } else {
+    
+    table <- datatable(
+      corrections,
+      colnames = c("Response ID", "Correction", "Reason", "User", "Date", "Fixed"),
+      escape = FALSE,
+      selection = "none",
+      editable = list(target='cell', disable = list(columns = c(4,5,6))),
+      options = list(
+        pageLength = 10,
+        dom = "t",
+        scrollX = TRUE,
+        scrollY = TRUE,
+        columnDefs = list(list(
+          className = 'dt-center', targets = 1
+        ))
+      )
+    ) |>
+      formatStyle(
+        columns = 0:ncol(corrections),
+        valueColumns = "fixed",
+        backgroundColor = styleEqual("✅", "#dbf5d7")
+      )
+    
+    return(table) 
+  }
 }

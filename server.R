@@ -449,7 +449,7 @@ shinyServer(function(input, output, session) {
     arrange(by = desc(fixed))
   
   output$corrections_table <-
-    renderDataTable(make_corrections_table(corrections_data))
+    renderDataTable(make_corrections_table(corrections_data, edit_data_status()))
   
   corrections <- reactiveVal()
   corrections(corrections_data)
@@ -521,6 +521,20 @@ shinyServer(function(input, output, session) {
       
       write_rds(corrections(), "data/corrections.RDS")
     }
+  })
+  
+  # edit corrections table
+  observeEvent(input$corrections_table_cell_edit, {
+    
+    changed_row <- input$corrections_table_cell_edit$row
+    changed_col <- input$corrections_table_cell_edit$col
+    changed_val <- input$corrections_table_cell_edit$value
+    
+    changed_corrections <- corrections()
+    changed_corrections[changed_row, changed_col] <- changed_val
+    corrections(changed_corrections)
+    
+    write_rds(corrections(), "data/corrections.RDS")
   })
   
   # button styling

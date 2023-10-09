@@ -208,7 +208,6 @@ ui <- (dashboardPage(
                           "dt_view_shapes",
                           "View in Map",
                           style = "simple",
-                          # size = "sm",
                           icon = icon("map")
                         ),
                         # download shapes
@@ -216,12 +215,9 @@ ui <- (dashboardPage(
                           "download_responses",
                           "Download",
                           style = "simple",
-                          # size = "sm",
                         ),
-                        box(
                           width = "100%",
                           dataTableOutput("datatable")
-                        )
                       ),
                       
                       ## change log ----
