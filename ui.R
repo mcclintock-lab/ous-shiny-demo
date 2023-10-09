@@ -218,8 +218,10 @@ ui <- (dashboardPage(
                           style = "simple",
                           # size = "sm",
                         ),
-                        
-                        dataTableOutput("datatable")
+                        box(
+                          width = "100%",
+                          dataTableOutput("datatable")
+                        )
                       ),
                       
                       ## change log ----

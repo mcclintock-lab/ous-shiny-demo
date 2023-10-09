@@ -436,7 +436,7 @@ shinyServer(function(input, output, session) {
   ### data download ----
   output$download_responses <- downloadHandler(
     filename = function() {
-      paste0(project, "processed_ous_responses_", data_update_ymd, ".csv")
+      paste0(project, "_processed_ous_responses_", data_update_ymd, ".csv")
     },
     content = function(file) {
       write_csv(latest_save(), file)

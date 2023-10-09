@@ -241,21 +241,12 @@ html, body {
    padding-right: 8px;
  }
  
- #DataTables_Table_1_filter {
-    /*float: left;*/
-}
- 
- /*main datatable height*/
- #DataTables_Table_1_wrapper > div.dataTables_scroll > div.dataTables_scrollBody {
-   height: calc(60vh - 114px);
- }
- 
  #dt-box {
    overflow-x: auto !important;
  }
  
  #dt-box > div > div > div.box-body {
-   padding-bottom: 0px !important;
+   padding-bottom: 5px !important;
  }
  
  #dt-box > div > div {
