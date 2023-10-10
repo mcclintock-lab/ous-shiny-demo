@@ -53,6 +53,7 @@ make_change_log_table <- function(change_log) {
       change_log,
       colnames = c("datetime", "response_id", "edited_field", "original_value", "new_value", "user"),
       escape = FALSE,
+      selection = "none",
       options = list(
         pageLength = 10,
         dom = "t",

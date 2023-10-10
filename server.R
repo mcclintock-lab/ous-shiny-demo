@@ -64,10 +64,10 @@ shinyServer(function(input, output, session) {
   )
   
   shapes <- reactive(shapes_reader())
-  shapes_for_viewer <- reactiveVal()
+  shapes_reactive <- reactiveVal()
   
   observe({
-    shapes_for_viewer(shapes())
+    shapes_reactive(shapes())
   })
   
   # data update datetime
@@ -104,14 +104,22 @@ shinyServer(function(input, output, session) {
     )
   })
   
+  max_rep <- reactiveVal()
+  
+  observe({
+    max_rep(
+      responses_reactive() |>
+      select(response_id, n_rep) |>
+      group_by(response_id) |> 
+      summarize(n_rep = max(n_rep))
+    )
+  })
+
+  
   # number represented box
   output$individuals_represented <- renderValueBox({
     valueBox(
-      (responses_reactive() |> 
-         select(response_id, n_rep) |>
-         group_by(response_id) |> 
-         summarize(n_rep = max(n_rep)))$n_rep |> 
-        sum(),
+      sum(max_rep()$n_rep),
       HTML(paste0("Individuals", br(), "Represented")),
       icon = icon("users")
     )
@@ -131,7 +139,7 @@ shinyServer(function(input, output, session) {
   
   ### target table ----
   output$target_table <- renderDataTable({
-    make_target_table(responses = responses())
+    make_target_table(responses = responses_reactive())
   })
   
   ### target editing ----
@@ -203,7 +211,7 @@ shinyServer(function(input, output, session) {
   
   output$resp_plot <- renderPlot({
     make_sector_plot(metric = resp_plot_metric(),
-                     responses = responses())
+                     responses = responses_reactive())
     
   })
   
@@ -417,7 +425,7 @@ shinyServer(function(input, output, session) {
                    by = c("response_id", "sector"))
       
       shapes_edited(changed_shapes)
-      shapes_for_viewer(changed_shapes)
+      shapes_reactive(changed_shapes)
       
       write_rds(changed_shapes, "data/temp/shapes.RDS")
       
@@ -564,7 +572,7 @@ shinyServer(function(input, output, session) {
   # SHAPE VIEWER -------------------------------------------------
   
   output$map <- renderLeaflet({
-    shapes <- shapes_for_viewer()
+    shapes <- shapes_reactive()
     
     if (input$filter_id == TRUE) {
       # parse user input for filter by response_id
@@ -694,45 +702,62 @@ shinyServer(function(input, output, session) {
   
   # REPORTING -----------------------------
   
-  output$reporting_totals_table <- renderDataTable(
-    make_reporting_totals_table(
-      responses = responses(),
-      respondent_info = respondent_info(),
-      shapes = shapes()
-    ),
-    server = FALSE,
-    options = list(
-      pageLength = 100,
-      dom = "t",
-      lengthChange = FALSE,
-      searching = FALSE
+  reporting_totals <- reactiveVal()
+  
+  observe({
+    reporting_totals(
+      make_reporting_totals(
+        responses = responses_reactive(),
+        shapes = shapes_reactive(),
+        max_rep = max_rep()
+      )
     )
+  })
+  
+  reporting_by_sector <- reactiveVal()
+  
+  observe({
+    reporting_by_sector(
+      make_reporting_by_sector(
+        responses = responses_reactive(),
+        shapes = shapes_reactive()
+      )
+    )
+  })
+  
+  output$reporting_totals_table <- renderDataTable(
+    datatable(
+      reporting_totals(),
+      options = list(
+        pageLength = 100,
+        dom = "t",
+        lengthChange = FALSE,
+        searching = FALSE
+      )
+    ),
+    server = FALSE
   )
   
   output$reporting_by_sector_table <- renderDataTable(
-    make_reporting_sector_table(
-      responses = responses(),
-      respondent_info = respondent_info(),
-      shapes = shapes()
+    datatable(
+      reporting_by_sector(),
+      options = list(
+        pageLength = 100,
+        dom = "t",
+        lengthChange = FALSE,
+        searching = FALSE,
+        columnDefs = list(list(width = '250px', targets = "Sector"))
+      )
     ),
-    server = FALSE,
-    options = list(
-      pageLength = 100,
-      dom = "t",
-      lengthChange = FALSE,
-      searching = FALSE,
-      columnDefs = list(list(width = '250px', targets = "Sector"))
-    )
+    server = FALSE
   )
   
   # reporting table titles
-  
   output$reporting_totals_title <- renderText("Totals")
   output$reporting_by_sector_title <- renderText("By Sector")
   
   ## download CSVs ----
-  
-  data_report_totals <- reactive(reporting_totals)
+  data_report_totals <- reactive(reporting_totals())
   
   output$download_report_totals <- downloadHandler(
     filename = function() {
@@ -743,7 +768,7 @@ shinyServer(function(input, output, session) {
     }
   )
   
-  data_report_sector <- reactive(reporting_by_sector)
+  data_report_sector <- reactive(reporting_by_sector())
   
   output$download_report_sector <- downloadHandler(
     filename = function() {
