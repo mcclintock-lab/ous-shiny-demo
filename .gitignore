@@ -5,6 +5,8 @@
 
 .DS_Store
 rsconnect
+data/temp
 data/demo_survey_targets.csv
 data/corrections.RDS
+data/change_log.RDS
 auth

@@ -89,10 +89,10 @@ make_demo_plot <- function(respondent_info) {
         axis.title.y = element_text(size = 14, face = "bold"),
         plot.margin = unit(c(0, 2, 5.5, 5), "mm")
       ) +
-      annotate("text", x = length(unique(respondent_info$age_range)) - 1,
-               y = -0.21 * age_count_max, label = age_resp_label, size = 4, hjust = 0) +
-      annotate("text", x = length(unique(respondent_info$age_range)) - 1,
-               y = -0.25 * age_count_max, label = gender_resp_label, size = 4, hjust = 0) +
+      annotate("text", x = length(unique(respondent_info$age_range)),
+               y = -0.24 * age_count_max, label = age_resp_label, size = 4, hjust = 0) +
+      annotate("text", x = length(unique(respondent_info$age_range)),
+               y = -0.28 * age_count_max, label = gender_resp_label, size = 4, hjust = 0) +
       coord_cartesian(ylim = c(0, age_count_max + round(0.1 * age_count_max + 0.5)),
                       xlim = c(1, length(unique(df$age_range))), clip = "off")
   

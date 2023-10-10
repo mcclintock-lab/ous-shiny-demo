@@ -15,6 +15,12 @@ html, body {
   background-color: #00A6E1 !important;
 }
 
+.skin-blue .main-header .logo {
+  
+  background-color: #0087B7;
+}
+
+
 /* box titles */
 .box-title {
   font-weight: bold; 
@@ -22,17 +28,13 @@ html, body {
   color: #00A6E1;
   padding-left: 10px;
 }
-
-/* scrollable window in datatable */
- .dataTables_scrollBody {
-   height: calc(70vh - 65px);
- }
  
  /* value boxes */
  .small-box {
    border-radius: 10px; 
    height: 133px;
    box-shadow: 0 1.5px 4px rgba(0,0,0,0.2), 0 1px 2px rgba(0,0,0,0.1);
+   background-color: #00A6E1 !important;
  }
  
  /* value box icons */
@@ -216,22 +218,56 @@ html, body {
   #dt_view_shapes {
    margin-top: 10px;
    margin-bottom: 0px;
+   margin-right: 10px;
    background-color: #00A6E1;
    color: white;
+   height: 25px;
+   font-size: 11pt;
+   padding-top: 0px;
+   padding-bottom: 0px;
+   padding-left: 8px;
+   padding-right: 8px;
  }
  
- #DataTables_Table_1_filter {
-    /*float: left;*/
-}
-
- #datatable {
-   max-width: 1400px !important;
+ #download_responses_bttn {
+   background-color: #00A6E1;
+   color: white;
+   margin-bottom: 20px;
+   height: 25px;
+   font-size: 11pt;
+   padding-top: 0px;
+   padding-bottom: 0px;
+   padding-left: 8px;
+   padding-right: 8px;
  }
  
  #dt-box {
-   max-width: 1400px !important;
+   overflow-x: auto !important;
  }
  
+ #dt-box > div > div > div.box-body {
+   padding-bottom: 5px !important;
+ }
+ 
+ #dt-box > div > div {
+   margin-bottom: 5px !important;
+ }
+ 
+ #corrections_table {
+   overflow-y: auto !important;
+ }
+ 
+ #corrections-text-input {
+   display: inline-block;
+   width: 500px;
+   margin-right: 20px;
+ }
+ 
+  #corrections-reason-input {
+   display: inline-block;
+   width: 500px;
+ }
+
   #submit_correction {
    background-color: #00A6E1;
    color: white;
@@ -239,27 +275,14 @@ html, body {
    margin-right: 15px;
  }
  
-  #mark_fixed {
-   background-color: #00A6E1;
-   color: white;
-   float: right;
- }
- 
  /* ---- shape viewer page ---- */
  #map {
    height: calc(80vh) !important;
  }
  
- #select_all_map_regions {
-   margin-bottom: 15px;
-   border-color: #00A6E1;
-   color: #00A6E1;
- }
- 
-  #deselect_all_map_regions {
-   margin-bottom: 15px;
-   border-color: #00A6E1;
-   color: #00A6E1;
+ #shape-viewer-box {
+   padding-right: 0px;
+   padding-left: 5px;
  }
  
  #region_text {
@@ -294,12 +317,24 @@ html, body {
    color: white;
    margin-bottom: 20px;
    margin-right: 10px;
+   height: 25px;
+   font-size: 11pt;
+   padding-top: 0px;
+   padding-bottom: 0px;
+   padding-left: 8px;
+   padding-right: 8px;
  }
  
  #download_filtered_shapes_bttn {
    background-color: #00A6E1;
    color: white;
    margin-bottom: 20px;
+   height: 25px;
+   font-size: 11pt;
+   padding-top: 0px;
+   padding-bottom: 0px;
+   padding-left: 8px;
+   padding-right: 8px;
  }
  
  #shapes-number {
@@ -323,6 +358,12 @@ html, body {
    display: inline-block;
    background-color: #00A6E1;
    color: white;
+   height: 25px;
+   font-size: 11pt;
+   padding-top: 0px;
+   padding-bottom: 0px;
+   padding-left: 8px;
+   padding-right: 8px;
  }
  
   #download_report_sector_bttn {
@@ -330,6 +371,12 @@ html, body {
    display: inline-block;
    background-color: #00A6E1;
    color: white;
+   height: 25px;
+   font-size: 11pt;
+   padding-top: 0px;
+   padding-bottom: 0px;
+   padding-left: 8px;
+   padding-right: 8px;
  }
   
  #reporting_totals_title {

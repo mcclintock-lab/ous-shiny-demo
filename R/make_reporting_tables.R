@@ -6,13 +6,24 @@ region_label <- "region"
 
 # totals ----
 
-make_reporting_totals_table <- function(responses, respondent_info, shapes) {
+make_reporting_totals <- function(responses, shapes, max_rep) {
   
   # individual respondents and individuals represented
-  n_resp_rep <- respondent_info |>
+  respondent_regions <- responses |> 
+    select(response_id, region) |> 
+    distinct()
+  
+  n_resp <- respondent_regions |> 
     group_by(region) |> 
-    summarize("individual_respondents" = n(),
-              "individuals_represented" = sum(max_rep))
+    count(name = "individual_respondents")
+  
+  n_rep <- max_rep |> 
+    left_join(respondent_regions) |> 
+    group_by(region) |> 
+    summarize("individuals_represented" = sum(n_rep))
+  
+  n_resp_rep <- n_resp |> 
+    left_join(n_rep)
   
   # sector responses
   n_sec_resp <- responses |> 
@@ -52,15 +63,13 @@ make_reporting_totals_table <- function(responses, respondent_info, shapes) {
     pivot_wider(names_from = all_of(1), values_from = value) |> 
     mutate(Metric = factor(Metric, levels = c("Individual respondents", "Individuals represented", "Sector responses", "Shapes drawn", "Multi-sector responses")))
   
-  datatable(reporting_totals)
-  
-  assign("reporting_totals", reporting_totals, envir = .GlobalEnv)
+  return(reporting_totals)
   
 }
 
 # by sector ----
 
-make_reporting_sector_table <- function(responses, respondent_info, shapes) {
+make_reporting_by_sector <- function(responses, shapes) {
   
   # sector responses and individuals represented
   n_resp_rep <- responses |>
@@ -93,9 +102,7 @@ make_reporting_sector_table <- function(responses, respondent_info, shapes) {
     mutate(Metric = factor(Metric, levels = c("Individuals represented", "Sector responses", "Percent total sector responses", "Shapes drawn"))) |> 
     rename("Sector" = "sector") 
   
-  datatable(reporting_by_sector)
-  
-  assign("reporting_by_sector", reporting_by_sector, envir = .GlobalEnv)
+  return(reporting_by_sector)
   
 }
 

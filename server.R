@@ -12,7 +12,7 @@ shinyServer(function(input, output, session) {
     secure_server(check_credentials = check_credentials("auth/users.sqlite",
                                                         passphrase = passphrase))
   
-  # Create reactive admin status to determine privileges
+  # PRIVILEGES --------------------------------
   admin_status <- reactive({
     reactiveValuesToList(res_auth)$admin
   })
@@ -39,6 +39,11 @@ shinyServer(function(input, output, session) {
   )
   
   responses <- reactive(responses_reader())
+  responses_reactive <- reactiveVal()
+  
+  observe({
+    responses_reactive(responses())
+  })
   
   # respondent_info
   respondent_info_reader <- reactiveFileReader(
@@ -59,6 +64,11 @@ shinyServer(function(input, output, session) {
   )
   
   shapes <- reactive(shapes_reader())
+  shapes_reactive <- reactiveVal()
+  
+  observe({
+    shapes_reactive(shapes())
+  })
   
   # data update datetime
   data_update_reader <- reactiveFileReader(
@@ -86,28 +96,41 @@ shinyServer(function(input, output, session) {
   })
   
   # number respondents box
-  output$num_respondents <- renderValueBox({
+  output$individual_respondents <- renderValueBox({
     valueBox(
-      nrow(respondent_info()),
+      length(unique(responses_reactive()$response_id)),
       HTML(paste0("Individual", br(), "Respondents")),
       icon = icon("user", class = "fa-solid fa-user")
     )
   })
   
+  max_rep <- reactiveVal()
+  
+  observe({
+    max_rep(
+      responses_reactive() |>
+      select(response_id, n_rep) |>
+      group_by(response_id) |> 
+      summarize(n_rep = max(n_rep))
+    )
+  })
+
+  
   # number represented box
-  output$num_rep <- renderValueBox({
+  output$individuals_represented <- renderValueBox({
     valueBox(
-      sum(respondent_info()$max_rep),
+      sum(max_rep()$n_rep),
       HTML(paste0("Individuals", br(), "Represented")),
       icon = icon("users")
     )
   })
   
   # sector responses box
-  output$sec_resp <- renderValueBox({
-    valueBox(nrow(responses()),
-             HTML(paste0("Sector", br(), "Responses")),
-             icon = icon("water")
+  output$sector_responses <- renderValueBox({
+    valueBox(
+      nrow(responses_reactive()),
+      HTML(paste0("Sector", br(), "Responses")),
+      icon = icon("water")
     )
   })
   
@@ -116,7 +139,7 @@ shinyServer(function(input, output, session) {
   
   ### target table ----
   output$target_table <- renderDataTable({
-    make_target_table(responses = responses())
+    make_target_table(responses = responses_reactive())
   })
   
   ### target editing ----
@@ -135,7 +158,7 @@ shinyServer(function(input, output, session) {
         changed_val <- ifelse(changed_val == "", NA, changed_val)
         changed_target <- targets_progress[[changed_row, "metric"]] |>
           snakecase::to_snake_case()
-
+        
         changed_target_table <- target_table_reactive()
         
         changed_target_table[changed_target_table$metric == changed_target, ]$target <-
@@ -188,7 +211,7 @@ shinyServer(function(input, output, session) {
   
   output$resp_plot <- renderPlot({
     make_sector_plot(metric = resp_plot_metric(),
-                     responses = responses())
+                     responses = responses_reactive())
     
   })
   
@@ -208,29 +231,225 @@ shinyServer(function(input, output, session) {
   
   # DATATABLE ----------------------------------------------
   
+  edit_data_status <- reactiveVal()
+  edit_data_status(FALSE)
+  
+  # conditional styling based on edit status
+  datatable_title_style <- reactiveVal()
+  edit_data_button <- reactiveVal()
+  save_edits_button <- reactiveVal()
+  save_data_button <- reactiveVal()
+  
+  observe({
+    if (!is.null(write_status()) && write_status() == FALSE) {
+      datatable_title_style("Ocean Use Survey Data")
+      edit_data_button("<div style='color:#bababa'>Edit data</div>")
+      save_edits_button("<div style='color:#bababa'>Save edits</div>")
+      
+    } else {
+      
+      if (edit_data_status() == FALSE) {
+        datatable_title_style("Ocean Use Survey Data")
+        edit_data_button("✏️ Edit data")
+        save_edits_button("<div style='color:#bababa'>◽️ Save edits</div>")
+        
+      } else {
+        datatable_title_style("<div style='color:orange'>Ocean Use Survey Data - Editing</div>")
+        edit_data_button("❌ Stop editing")
+        save_edits_button("💾 Save edits")
+      }
+    }
+  })
+  
+  output$datatable_title <- renderText(datatable_title_style())
+  output$edit_data_button <- renderText(edit_data_button())
+  output$save_edits_button <- renderText(save_edits_button())
+  
   ## main table ----
   output$datatable <-
-    renderDataTable(expr = make_datatable(responses = responses()),
+    renderDataTable(expr = make_datatable(responses = responses(),
+                                          edit_data_status = edit_data_status()),
                     server = FALSE)
   
+  ### view in map ----
   observeEvent(input$dt_view_shapes, {
     if (is.null(input$datatable_rows_selected)) {
-      showNotification("Please select a response in the table to view on map",
-                       type = "error")
+      show_alert(title = "Please select a response in the table to view in map",
+                 type = "warning")
       
     } else {
       updateTabItems(inputId = "tabs", selected = "shapes")
       
       selected_row <- input$datatable_rows_selected
-      selected_id <- unique(respondent_info()$response_id[selected_row])
+      selected_id <- unique(responses_reactive()$response_id[selected_row])
       
       updateTextInput(inputId = "shape_id", value = selected_id)
       
       updateSwitchInput(inputId = "filter_id", value = TRUE)
       
     }
-    
   })
+  
+  ### data editing ----
+    
+  # init reactive objects
+  latest_save <- reactiveVal()
+  responses_edited <- reactiveVal()
+  shapes_edited <- reactiveVal()
+  
+  observe({
+    # used to store latest save state for comparison with responses_edited() and downloading
+    latest_save(responses())
+    # used to store current state of table edits
+    responses_edited(responses())
+    # used to store current state of shape edits
+    shapes_edited(shapes())
+  })
+  
+  # listen for datatable edit status
+  observeEvent(input$edit_datatable, {
+    
+    if (!is.null(write_status()) && write_status() == TRUE) {
+      
+      edit_data_status(!edit_data_status())
+      
+      # revert responses_edited to latest save state when edit status changes to FALSE
+      if (edit_data_status() == FALSE) {
+        
+        responses_edited(latest_save())
+      }
+    }
+  })
+  
+  #### edit mode ----
+  
+  # listen for user edits to table and update responses accordingly
+  observeEvent(input$datatable_cell_edit, {
+    
+    if (edit_data_status() == TRUE) {
+      
+      changed_row <- input$datatable_cell_edit$row
+      changed_col <- input$datatable_cell_edit$col
+      changed_val <- input$datatable_cell_edit$value
+      changed_response_id <- responses_edited()[[changed_row, "response_id"]]
+      sector_changed <- changed_col == which(names(responses()) == "sector")
+      response_id_changed <- changed_col == which(names(responses()) == "response_id")
+      
+      # ensure logical variables conform
+      if (class(responses()[[changed_col]]) == "logical") {
+        
+        changed_val <- as.logical(changed_val)
+        
+        if (is.na(changed_val)) {
+          
+          show_alert(title = "This variable requires a value of 'true' or 'false'",
+                     type = "warning")
+          
+        } else {
+          
+          # make changes to reactive object with static intermediary
+          changed_responses <- responses_edited()
+          changed_responses[changed_row, changed_col] <- changed_val
+          responses_edited(changed_responses)
+        }
+      } else {
+        
+        if (sector_changed == TRUE) {
+          
+          if (!changed_val %in% sector_ids$sector) {
+            
+            show_alert(title = "That sector is not recognized",
+                       text = "Please check spelling, punctuation, and capitalization",
+                       type = "warning")
+          }
+          
+          changed_shapes <- shapes_edited()
+          original_sector <- latest_save()[[changed_row, changed_col]] 
+          shapes_changed_row <- which(changed_shapes$response_id == changed_response_id &
+                                        changed_shapes$sector == original_sector)
+          changed_shapes[shapes_changed_row, "sector"] <- changed_val
+          shapes_edited(changed_shapes)
+          
+        } else if (response_id_changed == TRUE) {
+          
+          if (!changed_val %in% responses_edited()$response_id) {
+            
+            show_alert(title = "That response ID doesn't exist in the data",
+                       type = "warning")
+          }
+          
+          changed_shapes <- shapes_edited()
+          original_response_id <- latest_save()[[changed_row, changed_col]] 
+          shapes_changed_row <- which(changed_shapes$response_id == changed_response_id)
+          changed_shapes[shapes_changed_row, "response_id"] <- changed_val
+          shapes_edited(changed_shapes)
+        }
+        
+        # make changes to reactive object with static intermediary
+        changed_responses <- responses_edited()
+        changed_responses[changed_row, changed_col] <- changed_val
+        responses_edited(changed_responses)
+      }
+    }
+  })
+  
+  #### save edits ----
+  
+  # save_datatable_edits listener - writes changes to responses.RDS and adds to change log
+  observeEvent(input$save_datatable_edits, {
+    
+    # save and update change log if changes have been made
+    if (!is.null(input$datatable_cell_edit) && edit_data_status() == TRUE 
+        && identical(responses_edited(), latest_save()) == FALSE
+    ) {
+      
+      # update change log
+      make_change_log(
+        latest_save(),
+        responses_edited(),
+        change_log,
+        current_user()
+      )
+      
+      # update responses
+      write_rds(responses_edited(), "data/temp/responses.RDS")
+      write_rds(change_log, "data/change_log.RDS")
+      
+      latest_save(responses_edited())
+      responses_reactive(responses_edited())
+      
+      # update shapes
+      changed_shapes <- shapes_edited() |> 
+        select(response_id, sector, all_of(shape_specific_attributes)) |> 
+        right_join(responses_edited(),
+                   by = c("response_id", "sector"))
+      
+      shapes_edited(changed_shapes)
+      shapes_reactive(changed_shapes)
+      
+      write_rds(changed_shapes, "data/temp/shapes.RDS")
+      
+      # rerender table
+      output$datatable <- renderDataTable({
+        make_datatable(responses = responses_edited(),
+                       edit_data_status = edit_data_status())
+      })
+      
+      output$change_log_table <- renderDataTable({
+        make_change_log_table(change_log = change_log)
+      }) 
+    }
+  })
+  
+  ### data download ----
+  output$download_responses <- downloadHandler(
+    filename = function() {
+      paste0(project, "_processed_ous_responses_", data_update_ymd, ".csv")
+    },
+    content = function(file) {
+      write_csv(latest_save(), file)
+    }
+  )
   
   ## corrections ----
   
@@ -238,7 +457,7 @@ shinyServer(function(input, output, session) {
     arrange(by = desc(fixed))
   
   output$corrections_table <-
-    renderDataTable(make_corrections_table(corrections_data))
+    renderDataTable(make_corrections_table(corrections_data, edit_data_status()))
   
   corrections <- reactiveVal()
   corrections(corrections_data)
@@ -248,15 +467,18 @@ shinyServer(function(input, output, session) {
   # submit new correction
   observeEvent(input$submit_correction, {
     
-    if (is.na(input$corrections_response_id) | input$corrections_text == "") {
-      showNotification("Please enter a valid response ID and comment",
-                       type = "error")
+    if (is.na(input$corrections_response_id) | 
+        input$corrections_text == "" |
+        input$corrections_reason == "") {
+      show_alert(title = "Please enter a valid response ID, correction, and reason",
+                 type = "warning")
     } else {
       new_entry <- data.frame(
         response_id = input$corrections_response_id,
         correction = input$corrections_text,
+        reason = input$corrections_reason,
         user = ifelse(class(current_user()) == "character", current_user(), NA),
-        date = now(),
+        date = as.character(now() |> substr(1, 19)),
         fixed = "⬜️"
       )
       
@@ -274,33 +496,70 @@ shinyServer(function(input, output, session) {
                            value = numeric(0))
         updateTextAreaInput(inputId = "corrections_text",
                             value = character(0))
+        updateTextAreaInput(inputId = "corrections_reason",
+                            value = character(0))
       } else {
-        showNotification("The submitted response ID doesn't exist in the dataset",
-                         type = "error")
+        show_alert("The submitted response ID doesn't exist in the dataset",
+                         type = "warning")
       }
     }
     
   })
   
   # mark entry as fixed
-  observeEvent(input$mark_fixed, {
-    selected_rows <- input$corrections_table_rows_selected
+  observeEvent(input$toggle_fixed, {
     
-    new_corrections <- corrections()
-    
-    for (i in seq_along(selected_rows)) {
-      if (new_corrections$fixed[selected_rows[i]] == "⬜️") {
-        new_corrections$fixed[selected_rows[i]] <- "✅"
-      } else {
-        new_corrections$fixed[selected_rows[i]] <- "⬜️"
+    if (!is.null(write_status()) && write_status() == TRUE) {
+      
+      selected_rows <- input$corrections_table_rows_selected
+      
+      new_corrections <- corrections()
+      
+      for (i in seq_along(selected_rows)) {
+        if (new_corrections$fixed[selected_rows[i]] == "⬜️") {
+          new_corrections$fixed[selected_rows[i]] <- "✅"
+        } else {
+          new_corrections$fixed[selected_rows[i]] <- "⬜️"
+        }
       }
+      
+      corrections(new_corrections)
+      
+      replaceData(corrections_proxy, new_corrections)
+      
+      write_rds(corrections(), "data/corrections.RDS")
     }
+  })
+  
+  # edit corrections table
+  observeEvent(input$corrections_table_cell_edit, {
     
-    corrections(new_corrections)
+    changed_row <- input$corrections_table_cell_edit$row
+    changed_col <- input$corrections_table_cell_edit$col
+    changed_val <- input$corrections_table_cell_edit$value
     
-    replaceData(corrections_proxy, new_corrections)
+    changed_corrections <- corrections()
+    changed_corrections[changed_row, changed_col] <- changed_val
+    corrections(changed_corrections)
     
     write_rds(corrections(), "data/corrections.RDS")
+  })
+  
+  # button styling
+  observe({
+    if (!is.null(write_status()) && write_status() == FALSE) {
+
+      output$toggle_fixed_button <- renderText("<div style='color:#bababa'>◽ Toggle fixed</div>")
+      
+    } else {
+      
+      output$toggle_fixed_button <- renderText("✅ Toggle fixed")
+    }
+  })
+  
+  ## changelog ----
+  output$change_log_table <- renderDataTable({
+    make_change_log_table(change_log = change_log)
   })
   
   ## duplicates ----
@@ -313,8 +572,7 @@ shinyServer(function(input, output, session) {
   # SHAPE VIEWER -------------------------------------------------
   
   output$map <- renderLeaflet({
-    #
-    shapes <- shapes()
+    shapes <- shapes_reactive()
     
     if (input$filter_id == TRUE) {
       # parse user input for filter by response_id
@@ -442,48 +700,64 @@ shinyServer(function(input, output, session) {
   )
   
   
-  # reporting -----------------------------
+  # REPORTING -----------------------------
+  
+  reporting_totals <- reactiveVal()
+  
+  observe({
+    reporting_totals(
+      make_reporting_totals(
+        responses = responses_reactive(),
+        shapes = shapes_reactive(),
+        max_rep = max_rep()
+      )
+    )
+  })
+  
+  reporting_by_sector <- reactiveVal()
+  
+  observe({
+    reporting_by_sector(
+      make_reporting_by_sector(
+        responses = responses_reactive(),
+        shapes = shapes_reactive()
+      )
+    )
+  })
   
   output$reporting_totals_table <- renderDataTable(
-    make_reporting_totals_table(
-      responses = responses(),
-      respondent_info = respondent_info(),
-      shapes = shapes()
+    datatable(
+      reporting_totals(),
+      options = list(
+        pageLength = 100,
+        dom = "t",
+        lengthChange = FALSE,
+        searching = FALSE
+      )
     ),
-    server = FALSE,
-    options = list(
-      pageLength = 100,
-      dom = "t",
-      lengthChange = FALSE,
-      searching = FALSE
-    )
+    server = FALSE
   )
   
   output$reporting_by_sector_table <- renderDataTable(
-    make_reporting_sector_table(
-      responses = responses(),
-      respondent_info = respondent_info(),
-      shapes = shapes()
+    datatable(
+      reporting_by_sector(),
+      options = list(
+        pageLength = 100,
+        dom = "t",
+        lengthChange = FALSE,
+        searching = FALSE,
+        columnDefs = list(list(width = '250px', targets = "Sector"))
+      )
     ),
-    server = FALSE,
-    options = list(
-      pageLength = 100,
-      dom = "t",
-      lengthChange = FALSE,
-      searching = FALSE,
-      columnDefs = list(list(width = '250px', targets = "Sector"))
-    )
+    server = FALSE
   )
   
   # reporting table titles
-  
   output$reporting_totals_title <- renderText("Totals")
-  
   output$reporting_by_sector_title <- renderText("By Sector")
   
   ## download CSVs ----
-  
-  data_report_totals <- reactive(reporting_totals)
+  data_report_totals <- reactive(reporting_totals())
   
   output$download_report_totals <- downloadHandler(
     filename = function() {
@@ -494,7 +768,7 @@ shinyServer(function(input, output, session) {
     }
   )
   
-  data_report_sector <- reactive(reporting_by_sector)
+  data_report_sector <- reactive(reporting_by_sector())
   
   output$download_report_sector <- downloadHandler(
     filename = function() {

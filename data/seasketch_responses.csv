@@ -1,0 +1,8 @@
+id,survey_id,created_at_utc,updated_at_utc,is_practice,is_duplicate_ip,is_logged_in,account_email,name,is_facilitated,facilitator_name,gender,age,region,harvest_license,vessel_id,what_sectors_do_you_representfor_sectors,comm_fish_no,aqua_no,energy_no,mar_biotech_no,rec_sports_no,rec_fish_no,research_no,sec_def_no,tour_fish_no
+5278,285,2023-09-22T21:38:06.395Z,2023-09-22T22:17:29.326Z,false,false,true,petermenzies@ucsb.edu,Margo Hayes,false,,Female,25,Central Coast,false,,Research,,,,,,,4,,
+5279,285,2023-09-22T21:42:12.349Z,2023-09-26T22:58:24.750Z,false,true,true,petermenzies@ucsb.edu,Barry Zuckerkorn,true,Dean Potter,Male,42,North Coast,true,9WYgoG,"Commercial fishing,Recreational fishing",3,,,,,,,,
+5280,285,2023-09-22T21:49:12.738Z,2023-09-22T22:17:01.315Z,false,true,true,petermenzies@ucsb.edu,Peter Menzies,false,,Male,30,Central Coast,false,,"Research,Recreation, sports, and tourism",,,,,,,1,,
+5281,285,2023-09-22T21:57:02.770Z,2023-09-22T22:16:30.836Z,false,true,true,petermenzies@ucsb.edu,Erin Beluski,true,Mac Thomson,Female,52,Bay Area,true,cS76Ve,"Commercial fishing,Touristic fishing",2,,,,,,,,1
+5282,285,2023-09-22T21:59:48.300Z,2023-09-22T22:16:06.772Z,false,true,true,petermenzies@ucsb.edu,Isha Pacheco,true,Laci Swindall,Female,37,Southern Coast,false,,"Energy development,Aquaculture",,,5,,,,,,
+5283,285,2023-09-22T22:01:51.717Z,2023-09-22T23:05:09.191Z,false,true,true,petermenzies@ucsb.edu,Jon Gallegos,true,Ashley Kennedy,Male,68,North Coast,true,dDFwJS,"Commercial fishing,Security and defense",3,,,,,,,3,
+5304,285,2023-09-27T22:10:30.921Z,,false,false,true,petermenzies@ucsb.edu,Barry Zuckerkorn,true,Michael Bluth,Male,52,Southern Coast,false,,"Recreation, sports, and tourism",,,,,,,,,

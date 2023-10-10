@@ -6,9 +6,10 @@ ui <- (dashboardPage(
     tags$li(
       class = "dropdown",
       id = "disclaimer",
-      HTML(
-        "*This app contains <a id=generate-data-link target=_blank href='https://github.com/mcclintock-lab/ous-shiny-demo/blob/main/R/generate_data.R'>randomly generated data</a> solely for demonstration purposes"
-      )
+      # HTML(
+      #   "*This app contains <a id=generate-data-link target=_blank href='https://github.com/mcclintock-lab/ous-shiny-demo/blob/main/R/generate_data.R'>randomly generated data</a> solely for demonstration purposes"
+      # )
+      "*This app contains fabricated data purely for demonstration purposes"
     ),
     tags$li(
       class = "dropdown",
@@ -50,6 +51,7 @@ ui <- (dashboardPage(
   dashboardBody(
     # javascript
     shinyjs::useShinyjs(),
+    # refresh button function
     shinyjs::extendShinyjs(text = "shinyjs.refresh_page = function() { location.reload(); }", functions = "refresh_page"),
     
     # STYLING ----
@@ -105,13 +107,13 @@ ui <- (dashboardPage(
               
               # value boxes with response and representation figures
               div(class = "col-sm-4 col-md-4 col-lg-4",
-                  valueBoxOutput("num_respondents", width = "33%")),
+                  valueBoxOutput("individual_respondents", width = "33%")),
               
               div(class = "col-sm-4 col-md-4 col-lg-4",
-                  valueBoxOutput("num_rep", width = "33%")),
+                  valueBoxOutput("individuals_represented", width = "33%")),
               
               div(class = "col-sm-4 col-md-4 col-lg-4",
-                  valueBoxOutput("sec_resp", width = "33%"))
+                  valueBoxOutput("sector_responses", width = "33%"))
             )
           ),
           
@@ -186,8 +188,16 @@ ui <- (dashboardPage(
               
               ## main tab ----
               div(id = "dt-box",
-                  box(
-                    width = "100%",
+                  shinydashboardPlus::box(
+                    title = htmlOutput("datatable_title"),
+                    width = 12,
+                    headerBorder = FALSE,
+                    dropdownMenu = shinydashboardPlus::boxDropdown(
+                      shinydashboardPlus::boxDropdownItem(htmlOutput("edit_data_button"),
+                                                          id = "edit_datatable"),
+                      shinydashboardPlus::boxDropdownItem(htmlOutput("save_edits_button"),
+                                                          id = "save_datatable_edits")
+                    ),
                     tabBox(
                       width = "100%",
                       tabPanel(
@@ -198,13 +208,25 @@ ui <- (dashboardPage(
                           "dt_view_shapes",
                           "View in Map",
                           style = "simple",
-                          size = "sm",
                           icon = icon("map")
                         ),
-                        
-                        dataTableOutput("datatable") |>
-                          withSpinner(type = 8)
-                        
+                        # download shapes
+                        downloadBttn(
+                          "download_responses",
+                          "Download",
+                          style = "simple",
+                        ),
+                          width = "100%",
+                          dataTableOutput("datatable")
+                      ),
+                      
+                      ## change log ----
+                      tabPanel(
+                        title = "Change Log",
+                        box(
+                          width = 12,
+                          dataTableOutput("change_log_table")
+                        )
                       ),
                       
                       ## corrections ----
@@ -213,37 +235,47 @@ ui <- (dashboardPage(
                         
                         tags$br(),
                         
-                        numericInput(
-                          "corrections_response_id",
-                          "Response ID:",
-                          NA,
-                          width = "25%"
+                        box(
+                          width = 12,
+                          numericInput(
+                            "corrections_response_id",
+                            "Response ID:",
+                            NA,
+                            width = "25%"
                           ),
-                        textAreaInput(
-                          "corrections_text",
-                          "Corrections to be made:",
-                          resize = "vertical",
-                          width = "50%"
+                          div(
+                            id = "corrections-text-input",
+                            textAreaInput(
+                              "corrections_text",
+                              "Corrections to be made:",
+                              resize = "vertical"
+                            )
+                          ),
+                          div(
+                            id = "corrections-reason-input",
+                            textAreaInput(
+                              "corrections_reason",
+                              "Reason for correction:",
+                              resize = "vertical"
+                            )
+                          )
                         ),
                         
                         tags$br(),
                         
                         shinydashboardPlus::box(
                           id = "corrections_box",
+                          dropdownMenu = shinydashboardPlus::boxDropdown(
+                            shinydashboardPlus::boxDropdownItem(
+                              htmlOutput("toggle_fixed_button"),
+                              id = "toggle_fixed")),
                           title = p(div(
                             id = "corrections_title",
-                            actionBttn(
-                              "mark_fixed",
-                              "Mark fixed",
-                              style = "simple",
-                              size = "md",
-                              icon = icon("check")
-                            ),
                             actionBttn(
                               "submit_correction",
                               "Submit new ",
                               style = "simple",
-                              size = "md",
+                              size = "sm",
                               icon = icon("plus")
                             )
                           )),
@@ -251,37 +283,30 @@ ui <- (dashboardPage(
                           
                           dataTableOutput("corrections_table")
                         )
-                      ),
-                      
-                      ## duplicates ----
-                      # tabPanel(
-                      #   title = "Duplicates",
-                      #   conditionalPanel(condition = "output.n_dups!='0'",
-                      #                    dataTableOutput("dup_table", width = "50%")),
-                      #   conditionalPanel(condition = "output.n_dups=='0'",
-                      #                    HTML(
-                      #                      paste0(br(), "No duplicate responses found")
-                      #                    ))
-                      # )
+                      )
                     )
-                  ))),
+                  )
+              )
+      ),
       
       # SHAPE VIEWER --------------------------------------------------------
       tabItem(tabName = "shapes",
               
               fluidRow(
                 div(
+                  id = "shape-viewer-box",
                   class = "col-sm-12 col-md-12 col-lg-4",
                   
-                  box(
-                    width = "100%",
+                  shinydashboardPlus::box(
+                    title = "Shape Viewer",
+                    width = 12,
                     
                     # clear filters
                     actionBttn(
                       "clear_shape_filters",
                       "Clear Map & Filters",
                       style = "simple",
-                      size = "sm",
+                      # size = "sm",
                       icon = icon("refresh")
                     ),
                     
@@ -290,10 +315,10 @@ ui <- (dashboardPage(
                       "download_filtered_shapes",
                       "Export Current Shapes",
                       style = "simple",
-                      size = "sm",
+                      # size = "sm",
                     ),
                     
-                    # sector filter dropdown
+                    # region filter dropdown
                     pickerInput(
                       inputId = "map_regions",
                       label = "Regions: ",
@@ -359,6 +384,7 @@ ui <- (dashboardPage(
                     ))
               )),
       
+      # REPORTING -------------------------------------
       tabItem(
         tabName = "reporting",
         

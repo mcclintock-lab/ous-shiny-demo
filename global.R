@@ -39,11 +39,15 @@ data_update <-
 # data update in ymd format for exported file names
 data_update_ymd <- gsub(" .*", "", as.character(temp_data_date))
 
+# shape-specific attributes you want to keep in the data editing process
+shape_specific_attributes <- NULL
+
 # load temp data files if data_prep.R was run since last data download
 if (temp_data_date >= data_update) {
   responses <- read_rds(here("data/temp/responses.RDS"))
   respondent_info <- read_rds(here("data/temp/respondent_info.RDS"))
   shapes <- read_rds(here("data/temp/shapes.RDS"))
+  change_log <- read_rds("data/change_log.RDS")
   
 } else {
   source("data_prep.R")
@@ -55,6 +59,7 @@ region_list <- unique(respondent_info[, get(region)])
 
 # load scripts
 source("R/make_plots.R")
-source("R/make_data_explorer.R")
+source("R/make_datatable.R")
 source("R/make_target_table.R")
 source("R/make_reporting_tables.R")
+source("R/make_change_log.R")
