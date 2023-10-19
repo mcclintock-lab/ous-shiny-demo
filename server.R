@@ -622,6 +622,9 @@ shinyServer(function(input, output, session) {
              div(id = "shapes-number", nrow(shapes)))
     })
     
+    fill_opacity <- 0.5 / log(nrow(shapes))
+    fill_opacity <- ifelse(fill_opacity > 0.3, 0.3, fill_opacity)
+    
     # render map
     leaflet(shapes) |>
       addProviderTiles("Esri.WorldStreetMap") |>
@@ -631,7 +634,7 @@ shinyServer(function(input, output, session) {
         stroke = TRUE,
         weight = 0.02,
         color = "black",
-        fillOpacity = 0.1,
+        fillOpacity = fill_opacity,
         fillColor = "red",
         highlight = highlightOptions(
           color = 'yellow',
