@@ -16,12 +16,9 @@ library(ggchicklet)
 library(snakecase)
 library(lubridate)
 
-secure <- F
+secure <- T
 
 project <- "demo"
-
-# identifies date of latest data files and removes old ones
-# source(here("R/manage_data.R"))
 
 # read in sector id abbreviation keys
 sector_ids <- read.csv(here("data/demo_sector_ids.csv"))
@@ -42,20 +39,16 @@ data_update_ymd <- gsub(" .*", "", as.character(temp_data_date))
 # shape-specific attributes you want to keep in the data editing process
 shape_specific_attributes <- NULL
 
-# load temp data files if data_prep.R was run since last data download
-if (temp_data_date >= data_update) {
-  responses <- read_rds(here("data/temp/responses.RDS"))
-  respondent_info <- read_rds(here("data/temp/respondent_info.RDS"))
-  shapes <- read_rds(here("data/temp/shapes.RDS"))
-  change_log <- read_rds("data/change_log.RDS")
-  
-} else {
-  source("data_prep.R")
-}
+# load latest processed data files
+responses <- read_rds(here("data/temp/responses.RDS"))
+respondent_info <- read_rds(here("data/temp/respondent_info.RDS"))
+shapes <- read_rds(here("data/temp/shapes.RDS"))
+change_log <- read_rds("data/change_log.RDS")
+
 
 # if there is a regional designation that is of interest to group by, define it here
 region <- "region"
-region_list <- unique(respondent_info[, get(region)])
+region_list <- unique(respondent_info[, region])
 
 # load scripts
 source("R/make_plots.R")
