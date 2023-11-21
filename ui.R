@@ -382,51 +382,51 @@ ui <- (dashboardPage(
                       leafletOutput("map") |>
                         withSpinner(type = 8)
                     ))
-              )),
+              ))
       
       # REPORTING -------------------------------------
-      tabItem(
-        tabName = "reporting",
-        
-        div(
-          id = "reporting-total-box",
-          
-          box(
-            width = "100%",
-            
-            textOutput("reporting_totals_title"),
-            
-            downloadBttn(
-              "download_report_totals",
-              "Download",
-              size = "sm",
-              style = "simple"
-            ),
-            
-            dataTableOutput("reporting_totals_table") |>
-              withSpinner(type = 8)
-          )
-        ),
-        
-        div(
-          id = "reporting-sector-box",
-          box(
-            width = "100%",
-            
-            textOutput("reporting_by_sector_title"),
-            
-            downloadBttn(
-              "download_report_sector",
-              "Download",
-              size = "sm",
-              style = "simple"
-            ),
-            
-            dataTableOutput("reporting_by_sector_table") |>
-              withSpinner(type = 8)
-          )
-        )
-      )
+      # tabItem(
+      #   tabName = "reporting",
+      #   
+      #   div(
+      #     id = "reporting-total-box",
+      #     
+      #     box(
+      #       width = "100%",
+      #       
+      #       textOutput("reporting_totals_title"),
+      #       
+      #       downloadBttn(
+      #         "download_report_totals",
+      #         "Download",
+      #         size = "sm",
+      #         style = "simple"
+      #       ),
+      #       
+      #       dataTableOutput("reporting_totals_table") |>
+      #         withSpinner(type = 8)
+      #     )
+      #   ),
+      #   
+      #   div(
+      #     id = "reporting-sector-box",
+      #     box(
+      #       width = "100%",
+      #       
+      #       textOutput("reporting_by_sector_title"),
+      #       
+      #       downloadBttn(
+      #         "download_report_sector",
+      #         "Download",
+      #         size = "sm",
+      #         style = "simple"
+      #       ),
+      #       
+      #       dataTableOutput("reporting_by_sector_table") |>
+      #         withSpinner(type = 8)
+      #     )
+      #   )
+      # )
     )
   )
 ))

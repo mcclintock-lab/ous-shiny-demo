@@ -78,7 +78,7 @@ if (n_new_responses != 0) {
 shapes_raw <- read_sf("data/shapes.json")
 
 shapes <- shapes_raw |>
-  dplyr::select(-c(area_sq_meters, feature_name, survey_id, n_rep)) |>
+  dplyr::select(-c(area_sq_meters, feature_name, survey_id)) |>
   rename(value = priority)
 
 # join shapes with csv info
@@ -119,7 +119,8 @@ temp_data_date <- Sys.time()
 write_rds(temp_data_date, here("data/temp/temp_data_date.RDS"))
 
 # data that data were downloaded
-data_date <- file.info("data/responses.csv")$mtime
+data_date <- file.info("data/responses.csv")$mtime |> 
+  format(format = "%Y-%m-%d %H:%M:%S %Z")
 write_rds(data_date, here("data/temp/data_date.RDS"))
 
 

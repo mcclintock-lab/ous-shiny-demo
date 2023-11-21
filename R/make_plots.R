@@ -5,15 +5,13 @@ make_sector_plot <- function(metric, responses) {
   
   if (metric == "represented") {
     
-    targets_df <- sector_targets
-    
     df <- responses |> 
       group_by(sector) |> 
-      summarize(n = sum(n_rep)) |> 
+      summarize(n = sum(participants)) |> 
       mutate(sector = as.character(sector)) |> 
       mutate(sector = str_wrap(sector, width = 20),
              sector = as.factor(sector)) |>
-      left_join(targets_df)
+      left_join(sector_targets)
     
     ggplot(df, aes(x = reorder(sector, n), y = n)) +
       geom_chicklet(fill = "#2E4052", radius = grid::unit(5, "pt")) +
@@ -58,44 +56,32 @@ make_sector_plot <- function(metric, responses) {
 
 # make demographics plot ----
 make_demo_plot <- function(respondent_info) {
-    
-    age_resp <- round((1 - nrow(respondent_info |> filter(is.na(age_range))) / nrow(respondent_info)) * 100)
-    age_resp_label <- paste0(age_resp, "% reported age")
-    gender_resp <- round((1 - nrow(respondent_info |> filter(is.na(gender))) / nrow(respondent_info)) * 100)
-    gender_resp_label <- paste0(gender_resp, "% reported gender") 
-    
-    df <- respondent_info |>
-      filter(!is.na(age_range),
-             !is.na(gender)) |> 
-      group_by(age_range, gender) |> 
-      count()
-    
-    age_count <- df |> 
-      group_by(age_range) |> 
-      summarize(n = sum(n))
-    
-    age_count_max <- max(age_count$n)
-    
-    ggplot(df, aes(x = age_range, y = df$n, fill = gender)) + # need df$n or R sees it as function n()
-      geom_chicklet() + 
-      labs(x = "\nAge range", y = "Number of respondents\n", fill = "Gender") +
-      scale_fill_manual(values=c("#BDD9BF", "#2E4052", "#FFC857"),
-                        labels = c("Female", "Male", "Rather\nnot say")) +
-      theme_minimal() +
-      theme(
-        axis.text.x = element_text(size = 12, angle = 20),
-        axis.text.y = element_text(size = 12),
-        axis.title.x = element_text(size = 14, face = "bold"),
-        axis.title.y = element_text(size = 14, face = "bold"),
-        plot.margin = unit(c(0, 2, 5.5, 5), "mm")
-      ) +
-      annotate("text", x = length(unique(respondent_info$age_range)),
-               y = -0.24 * age_count_max, label = age_resp_label, size = 4, hjust = 0) +
-      annotate("text", x = length(unique(respondent_info$age_range)),
-               y = -0.28 * age_count_max, label = gender_resp_label, size = 4, hjust = 0) +
-      coord_cartesian(ylim = c(0, age_count_max + round(0.1 * age_count_max + 0.5)),
-                      xlim = c(1, length(unique(df$age_range))), clip = "off")
   
+  age_counts <- respondent_info |> 
+    select(all_of(matches("^age_.*"))) |> 
+    summarise_all("sum") |> 
+    pivot_longer(everything(), names_to = "age_group", values_to = "count") |> 
+    mutate(age_group = str_remove(age_group, "age_"))
+  
+  age_counts <- age_counts[c(2,3,4,1),]
+  
+  gender_counts <- respondent_info |> 
+    select(all_of(matches("^gender_.*"))) |> 
+    summarise_all("sum") |> 
+    pivot_longer(everything(), names_to = "gender", values_to = "count") |> 
+    mutate(gender = str_remove(gender, "gender_"))
+  
+  ggplot(age_counts, aes(x = age_group, y = count)) + # need df$n or R sees it as function n()
+    geom_chicklet(fill = "#2E4052") + 
+    labs(x = "\nAge group", y = "Number of respondents\n") +
+    theme_minimal() +
+    theme(
+      axis.text.x = element_text(size = 12),
+      axis.text.y = element_text(size = 12),
+      axis.title.x = element_text(size = 14, face = "bold"),
+      axis.title.y = element_text(size = 14, face = "bold"),
+      plot.margin = unit(c(0, 2, 5.5, 5), "mm")
+    )
 }
 
 

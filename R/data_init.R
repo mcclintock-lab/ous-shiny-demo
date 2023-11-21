@@ -4,6 +4,8 @@ librarian::shelf(tidyverse, sf, janitor, here)
 source("R/parse_age_groups.R")
 source("R/parse_genders.R")
 
+region <- "region"
+
 writeLines("---\n** RUNNING DATA INIT **\n---")
 
 # clean responses ----
@@ -92,6 +94,7 @@ temp_data_date <- Sys.time()
 write_rds(temp_data_date, here("data/temp/temp_data_date.RDS"))
 
 # data that data were downloaded
-data_date <- file.info("data/responses.csv")$mtime
+data_date <- file.info("data/responses.csv")$mtime |> 
+  format(format = "%Y-%m-%d %H:%M:%S %Z")
 write_rds(data_date, here("data/temp/data_date.RDS"))
 

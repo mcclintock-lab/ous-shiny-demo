@@ -74,12 +74,12 @@ shinyServer(function(input, output, session) {
   data_update_reader <- reactiveFileReader(
     intervalMillis = 1.8e3,
     session = session,
-    filePath = "data/temp/data_update.txt",
-    readFunc = readLines
+    filePath = "data/temp/data_date.RDS",
+    readFunc = read_rds
   )
   
-  data_update <- reactive(data_update_reader() |>
-                            as_datetime(tz = "America/Los_Angeles"))
+  data_update <- reactive(data_update_reader())
+  
   
   # REFRESH APP ----------------------------------------------
   observeEvent(input$refresh, {
@@ -104,22 +104,22 @@ shinyServer(function(input, output, session) {
     )
   })
   
-  max_rep <- reactiveVal()
-  
-  observe({
-    max_rep(
-      responses_reactive() |>
-      select(response_id, n_rep) |>
-      group_by(response_id) |> 
-      summarize(n_rep = max(n_rep))
-    )
-  })
+  # max_rep <- reactiveVal()
+  # 
+  # observe({
+  #   max_rep(
+  #     responses_reactive() |>
+  #     select(response_id, n_rep) |>
+  #     group_by(response_id) |> 
+  #     summarize(n_rep = max(n_rep))
+  #   )
+  # })
 
   
   # number represented box
   output$individuals_represented <- renderValueBox({
     valueBox(
-      sum(max_rep()$n_rep),
+      sum(respondent_info()$participants),
       HTML(paste0("Individuals", br(), "Represented")),
       icon = icon("users")
     )
@@ -704,81 +704,81 @@ shinyServer(function(input, output, session) {
   
   
   # REPORTING -----------------------------
-  
-  reporting_totals <- reactiveVal()
-  
-  observe({
-    reporting_totals(
-      make_reporting_totals(
-        responses = responses_reactive(),
-        shapes = shapes_reactive(),
-        max_rep = max_rep()
-      )
-    )
-  })
-  
-  reporting_by_sector <- reactiveVal()
-  
-  observe({
-    reporting_by_sector(
-      make_reporting_by_sector(
-        responses = responses_reactive(),
-        shapes = shapes_reactive()
-      )
-    )
-  })
-  
-  output$reporting_totals_table <- renderDataTable(
-    datatable(
-      reporting_totals(),
-      options = list(
-        pageLength = 100,
-        dom = "t",
-        lengthChange = FALSE,
-        searching = FALSE
-      )
-    ),
-    server = FALSE
-  )
-  
-  output$reporting_by_sector_table <- renderDataTable(
-    datatable(
-      reporting_by_sector(),
-      options = list(
-        pageLength = 100,
-        dom = "t",
-        lengthChange = FALSE,
-        searching = FALSE,
-        columnDefs = list(list(width = '250px', targets = "Sector"))
-      )
-    ),
-    server = FALSE
-  )
-  
-  # reporting table titles
-  output$reporting_totals_title <- renderText("Totals")
-  output$reporting_by_sector_title <- renderText("By Sector")
-  
-  ## download CSVs ----
-  data_report_totals <- reactive(reporting_totals())
-  
-  output$download_report_totals <- downloadHandler(
-    filename = function() {
-      paste0(project, "_ous_reporting_totals.csv")
-    },
-    content = function(file) {
-      write_csv(data_report_totals(), file)
-    }
-  )
-  
-  data_report_sector <- reactive(reporting_by_sector())
-  
-  output$download_report_sector <- downloadHandler(
-    filename = function() {
-      paste0(project, "_ous_reporting_by_sector.csv")
-    },
-    content = function(file) {
-      write_csv(data_report_sector(), file)
-    }
-  )
+  # 
+  # reporting_totals <- reactiveVal()
+  # 
+  # observe({
+  #   reporting_totals(
+  #     make_reporting_totals(
+  #       responses = responses_reactive(),
+  #       shapes = shapes_reactive(),
+  #       max_rep = max_rep()
+  #     )
+  #   )
+  # })
+  # 
+  # reporting_by_sector <- reactiveVal()
+  # 
+  # observe({
+  #   reporting_by_sector(
+  #     make_reporting_by_sector(
+  #       responses = responses_reactive(),
+  #       shapes = shapes_reactive()
+  #     )
+  #   )
+  # })
+  # 
+  # output$reporting_totals_table <- renderDataTable(
+  #   datatable(
+  #     reporting_totals(),
+  #     options = list(
+  #       pageLength = 100,
+  #       dom = "t",
+  #       lengthChange = FALSE,
+  #       searching = FALSE
+  #     )
+  #   ),
+  #   server = FALSE
+  # )
+  # 
+  # output$reporting_by_sector_table <- renderDataTable(
+  #   datatable(
+  #     reporting_by_sector(),
+  #     options = list(
+  #       pageLength = 100,
+  #       dom = "t",
+  #       lengthChange = FALSE,
+  #       searching = FALSE,
+  #       columnDefs = list(list(width = '250px', targets = "Sector"))
+  #     )
+  #   ),
+  #   server = FALSE
+  # )
+  # 
+  # # reporting table titles
+  # output$reporting_totals_title <- renderText("Totals")
+  # output$reporting_by_sector_title <- renderText("By Sector")
+  # 
+  # ## download CSVs ----
+  # data_report_totals <- reactive(reporting_totals())
+  # 
+  # output$download_report_totals <- downloadHandler(
+  #   filename = function() {
+  #     paste0(project, "_ous_reporting_totals.csv")
+  #   },
+  #   content = function(file) {
+  #     write_csv(data_report_totals(), file)
+  #   }
+  # )
+  # 
+  # data_report_sector <- reactive(reporting_by_sector())
+  # 
+  # output$download_report_sector <- downloadHandler(
+  #   filename = function() {
+  #     paste0(project, "_ous_reporting_by_sector.csv")
+  #   },
+  #   content = function(file) {
+  #     write_csv(data_report_sector(), file)
+  #   }
+  # )
 })
