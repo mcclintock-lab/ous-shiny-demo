@@ -26,14 +26,9 @@ sector_ids <- read.csv(here("data/demo_sector_ids.csv"))
 # date project officially launched
 launch_date <- "2022-09-06"
 
-# datetime temp data files were generated
-temp_data_date <- read_rds(here("data/temp/temp_data_date.RDS"))
-
-# datetime data were last downloaded from seasketch
-data_update <- read_rds(here("data/temp/data_date.RDS"))
-
 # data update in ymd format for exported file names
-data_update_ymd <- gsub(" .*", "", as.character(temp_data_date))
+data_update_ymd <- read_rds("data/temp/data_date.RDS") |> 
+  gsub(pattern = " .*", replacement = "")
 
 # shape-specific attributes you want to keep in the data editing process
 shape_specific_attributes <- NULL
@@ -43,7 +38,6 @@ responses <- read_rds(here("data/temp/responses.RDS"))
 respondent_info <- read_rds(here("data/temp/respondent_info.RDS"))
 shapes <- read_rds(here("data/temp/shapes.RDS"))
 change_log <- read_rds("data/change_log.RDS")
-
 
 # if there is a regional designation that is of interest to group by, define it here
 region <- "region"
