@@ -73,7 +73,7 @@ ui <- (dashboardPage(
                 div(id = "latest-data-box",
                     box(
                       tags$a(
-                        href = "https://seasketch.org",
+                        href = seasketch_url,
                         target = "_blank",
                         img(src = "images/seasketch-logo.png",
                             style = "height: 35px; margin-bottom: 17px; margin-top: 10px;"),
