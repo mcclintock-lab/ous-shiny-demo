@@ -3,8 +3,8 @@
 librarian::shelf(tidyverse, sf, janitor, here)
 source("R/parse_age_groups.R")
 source("R/parse_genders.R")
-
-region <- "region"
+source("R/parse_regions.R")
+source("R/project_variables.R")
 
 writeLines("---\n** RUNNING DATA INIT **\n---")
 
@@ -23,17 +23,7 @@ respondent_info <- responses_raw |>
     time = substr(created_at_utc, 12, 19),
     .after = id
   ) |> 
-select(
-  -c(
-    account_email,
-    is_logged_in,
-    is_duplicate_ip,
-    survey_id,
-    created_at_utc,
-    updated_at_utc,
-    is_practice
-  )
-) |>
+select(-all_of(columns_to_remove)) |>
   clean_names() |>
   rename(
     response_id = id,
@@ -44,8 +34,9 @@ select(
   mutate(gender = ifelse(gender == "", NA, gender),
          phone_number = as.character(phone_number))
 
-respondent_info <- parse_age_groups(respondent_info)
-respondent_info <- parse_genders(respondent_info)
+respondent_info <- parse_age_groups(respondent_info, age_groups)
+respondent_info <- parse_genders(respondent_info, genders)
+respondent_info <- parse_regions(respondent_info, region_list, region)
 
 ## sector responses ----
 ## create df of individual entries pertaining to each sector a respondent drew a shape(s) for
@@ -65,21 +56,17 @@ shapes <- shapes_raw |>
   right_join(responses) |>
   st_make_valid() |>
   select(
-    response_id,
-    name,
-    facilitator_name,
-    sector,
-    !!region,
-    value = priority,
-    feature_name,
-    is_facilitated
+    all_of(shape_attributes_to_keep),
+    all_of(shape_specific_attributes),
+    contains(region),
   ) |>
   st_make_valid()
 
 
 ## clip to eez
 eez <- read_sf("data/eez.fgb") |> 
-  st_make_valid()
+  st_make_valid() |> 
+  select(geometry)
 
 shapes <- st_intersection(shapes, eez)
 
@@ -89,7 +76,7 @@ write_rds(responses, here("data/temp/responses.RDS"))
 write_rds(respondent_info, here("data/temp/respondent_info.RDS"))
 write_rds(shapes, here("data/temp/shapes.RDS"))
 
-# date that temp files were created
+# date that data were processed and temp files were created
 temp_data_date <- Sys.time()
 write_rds(temp_data_date, here("data/temp/temp_data_date.RDS"))
 

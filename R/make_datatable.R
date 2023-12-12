@@ -89,6 +89,7 @@ make_corrections_table <- function(corrections, edit_data_status) {
         dom = "t",
         scrollX = TRUE,
         scrollY = TRUE,
+        language = list(emptyTable = "No corrections submitted"),
         columnDefs = list(list(
           className = 'dt-center', targets = 1
         ))
@@ -115,6 +116,7 @@ make_corrections_table <- function(corrections, edit_data_status) {
         dom = "t",
         scrollX = TRUE,
         scrollY = TRUE,
+        language = list(emptyTable = "No corrections submitted"),
         columnDefs = list(list(
           className = 'dt-center', targets = 1
         ))

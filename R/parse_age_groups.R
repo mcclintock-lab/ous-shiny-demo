@@ -1,7 +1,7 @@
 # takes as input a responses df containing an age column with JSON key value pairs
 # and returns the same df with each age group added as a column
 
-parse_age_groups <- function(responses) {
+parse_age_groups <- function(responses, age_groups) {
   
   age_parsed_list <- list()
   
@@ -13,6 +13,15 @@ parse_age_groups <- function(responses) {
   
   age_parsed <- data.table::rbindlist(age_parsed_list, fill = TRUE) |> 
     as.data.frame()
+  
+  # add columns for any unrepresented age groups
+  unrep <- setdiff(age_groups, names(age_parsed))
+  
+  for (i in seq_along(unrep)) {
+    
+    col_name <- unrep[i]
+    age_parsed[col_name] <- 0
+  }
   
   names <- sapply(names(age_parsed), FUN = function(x) paste0("age_", x))
   names(age_parsed) <- names

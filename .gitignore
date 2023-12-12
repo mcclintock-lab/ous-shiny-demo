@@ -5,8 +5,11 @@
 
 .DS_Store
 rsconnect
+data/responses.csv
+data/shapes.json
 data/temp
 data/survey_targets.csv
 data/corrections.RDS
 data/change_log.RDS
 auth
+R/secure_option.R

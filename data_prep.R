@@ -2,6 +2,8 @@
 librarian::shelf(tidyverse, sf, janitor, here)
 source("R/parse_age_groups.R")
 source("R/parse_genders.R")
+source("R/parse_regions.R")
+source("R/project_variables.R")
 
 writeLines("---\n** RUNNING DATA PREP **\n---")
 
@@ -16,16 +18,26 @@ imported_responses_raw <- read_csv("data/responses.csv")
 existing_imported_responses <- imported_responses_raw |> 
   filter(id %in% existing_local_ids)
 
+removed_response_ids <- setdiff(existing_local_ids, imported_responses_raw$id)
+
 new_responses <- imported_responses_raw |> 
   filter(!id %in% existing_local_ids)
 
 n_new_responses <- nrow(new_responses)
 
+n_removed_response_ids <- length(removed_response_ids)
+
+# filter out any responses that were removed on seasketch
+existing_local_responses <- existing_local_responses |> 
+  filter(!response_id %in% removed_response_ids)
+
+existing_local_respondent_info <- existing_local_respondent_info |> 
+  filter(!response_id %in% removed_response_ids)
+
 # if new responses exist, process them
 if (n_new_responses != 0) {
   
   prep_statement <- paste0("---\n** ADDING ", n_new_responses, " NEW RESPONSES **\n---")
-  
   writeLines(prep_statement)
   
   # create cleaned version of data exported from seasketch
@@ -35,17 +47,7 @@ if (n_new_responses != 0) {
       time = substr(created_at_utc, 12, 19),
       .after = id
     ) |> 
-  select(
-    -c(
-      account_email,
-      is_logged_in,
-      is_duplicate_ip,
-      survey_id,
-      created_at_utc,
-      updated_at_utc,
-      is_practice
-    )
-  ) |>
+  select(-all_of(columns_to_remove)) |>
     clean_names() |>
     rename(
       response_id = id,
@@ -53,8 +55,12 @@ if (n_new_responses != 0) {
     ) |>
     filter(!str_detect(sector, "Unknown"),
            sector != "") |>
-    mutate(gender = ifelse(gender == "", NA, gender))
+    mutate(gender = ifelse(gender == "", NA, gender),
+           phone_number = as.character(phone_number))
   
+  new_respondent_info <- parse_age_groups(new_respondent_info, age_groups)
+  new_respondent_info <- parse_genders(new_respondent_info, genders)
+  new_respondent_info <- parse_regions(new_respondent_info, region_list, region)
   
   # create sector new_responses df ---- 
   
@@ -86,12 +92,8 @@ shapes <- shapes |>
   right_join(responses) |>
   st_make_valid() |>
   select(
-    response_id,
-    name,
-    facilitator_name,
-    sector,
-    !!region,
-    is_facilitated
+    all_of(shape_attributes_to_keep),
+    contains(region)
   ) |>
   st_make_valid()
 
@@ -108,9 +110,31 @@ write_rds(responses, here("data/temp/responses.RDS"))
 write_rds(respondent_info, here("data/temp/respondent_info.RDS"))
 write_rds(shapes, here("data/temp/shapes.RDS"))
 
+# if no new responses were added but existing responses were removed on seasketch
+} else if (n_removed_response_ids != 0) {
+  
+  prep_statement <- paste0("---\n** REMOVING ", n_removed_response_ids, " OLD RESPONSES **\n---")
+  writeLines(prep_statement)
+  
+  responses <- existing_local_responses
+  respondent_info <- existing_local_respondent_info
+  
+  shapes <- shapes |>
+    right_join(responses) |>
+    st_make_valid() |>
+    select(
+      all_of(shape_attributes_to_keep),
+      all_of(shape_specific_attributes),
+      contains(region)
+    )
+  
+  write_rds(responses, "data/temp/responses.RDS")
+  write_rds(respondent_info, "data/temp/respondent_info.RDS")
+  write_rds(shapes, "data/temp/shapes.RDS")
+
 } else {
   
-  writeLines("---\n** NO NEW RESPONSES TO PROCESS **\n---")
+  writeLines("---\n** NO CHANGES TO PROCESS **\n---")
   
 }
 

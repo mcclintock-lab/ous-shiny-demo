@@ -104,18 +104,6 @@ shinyServer(function(input, output, session) {
     )
   })
   
-  # max_rep <- reactiveVal()
-  # 
-  # observe({
-  #   max_rep(
-  #     responses_reactive() |>
-  #     select(response_id, n_rep) |>
-  #     group_by(response_id) |> 
-  #     summarize(n_rep = max(n_rep))
-  #   )
-  # })
-
-  
   # number represented box
   output$individuals_represented <- renderValueBox({
     valueBox(
@@ -198,9 +186,27 @@ shinyServer(function(input, output, session) {
   
   ## demographic plot ----
   
+  # initially define metric that can be changed with the box dropdown menu
+  demo_plot_metric <- reactiveVal()
+  demo_plot_metric("age")
+  
   output$demo_plot <- renderPlot({
-    make_demo_plot(respondent_info = respondent_info())
+    make_demo_plot(respondent_info = respondent_info(),
+                   metric = demo_plot_metric())
     
+  })
+  
+  # observe dropdown input
+  observeEvent(input$age, {
+    if (demo_plot_metric() != "age") {
+      demo_plot_metric("age")
+    }
+  })
+  
+  observeEvent(input$gender, {
+    if (demo_plot_metric() != "gender") {
+      demo_plot_metric("gender")
+    }
   })
   
   ## sector plot ------------------------------------
@@ -291,7 +297,7 @@ shinyServer(function(input, output, session) {
   })
   
   ### data editing ----
-    
+  
   # init reactive objects
   latest_save <- reactiveVal()
   responses_edited <- reactiveVal()
@@ -356,7 +362,7 @@ shinyServer(function(input, output, session) {
         
         if (sector_changed == TRUE) {
           
-          if (!changed_val %in% sector_ids$sector) {
+          if (!changed_val %in% sectors) {
             
             show_alert(title = "That sector is not recognized",
                        text = "Please check spelling, punctuation, and capitalization",
@@ -500,7 +506,7 @@ shinyServer(function(input, output, session) {
                             value = character(0))
       } else {
         show_alert("The submitted response ID doesn't exist in the dataset",
-                         type = "warning")
+                   type = "warning")
       }
     }
     
@@ -548,7 +554,7 @@ shinyServer(function(input, output, session) {
   # button styling
   observe({
     if (!is.null(write_status()) && write_status() == FALSE) {
-
+      
       output$toggle_fixed_button <- renderText("<div style='color:#bababa'>◽ Toggle fixed</div>")
       
     } else {
@@ -583,13 +589,6 @@ shinyServer(function(input, output, session) {
         filter(response_id %in% shape_id)
       
     } else {
-      if ("all" %in% input$map_regions) {
-        map_regions <- unique(shapes$region)
-        
-      } else {
-        map_regions <- input$map_regions
-        
-      }
       
       if (input$map_facil_var == "both") {
         map_facil <- c(TRUE, FALSE)
@@ -598,19 +597,16 @@ shinyServer(function(input, output, session) {
         map_facil <- input$map_facil_var
       }
       
-      if ("All" %in% input$map_sector) {
-        shapes <- shapes |>
-          filter(region %in% map_regions,
-                 is_facilitated %in% map_facil)
-        
-      } else {
-        shapes <- shapes |>
-          filter(
-            region %in% map_regions,
-            sector %in% input$map_sector,
-            is_facilitated %in% map_facil
-          )
-      }
+      regions_represented_split <- map(shapes$regions_represented, function(x) str_split_1(x, ","))
+      region_detected <- sapply(regions_represented_split, function(x) length(intersect(x, input$map_regions)) > 0)
+      
+      shapes <- shapes[region_detected, ]
+      
+      shapes <- shapes |>
+        filter(
+          sector %in% input$map_sector,
+          is_facilitated %in% map_facil
+        )
     }
     
     # save filtered shapes as reactive expression to global env for shape export

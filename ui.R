@@ -2,15 +2,7 @@
 
 ui <- (dashboardPage(
   dashboardHeader(
-    title = "Ocean Use Survey",
-    tags$li(
-      class = "dropdown",
-      id = "disclaimer",
-      # HTML(
-      #   "*This app contains <a id=generate-data-link target=_blank href='https://github.com/mcclintock-lab/ous-shiny-demo/blob/main/R/generate_data.R'>randomly generated data</a> solely for demonstration purposes"
-      # )
-      "*This app contains fabricated data purely for demonstration purposes"
-    ),
+    title = app_title,
     tags$li(
       class = "dropdown",
       actionBttn(
@@ -39,11 +31,6 @@ ui <- (dashboardPage(
         "Shape Viewer",
         tabName = "shapes",
         icon = icon("map", verify_fa = F)
-      ),
-      menuItem(
-        "Reporting",
-        tabName = "reporting",
-        icon = icon("file-lines", verify_fa = F)
       )
     )
   ),
@@ -176,6 +163,12 @@ ui <- (dashboardPage(
                   width = 12,
                   collapsible = TRUE,
                   
+                  dropdownMenu = shinydashboardPlus::boxDropdown(
+                    shinydashboardPlus::boxDropdownItem("Age", id = "age"),
+                    shinydashboardPlus::boxDropdownItem("Gender", id = "gender")
+                    
+                  ),
+                  
                   plotOutput("demo_plot") |>
                     withSpinner(type = 8)
                 )
@@ -216,8 +209,8 @@ ui <- (dashboardPage(
                           "Download",
                           style = "simple",
                         ),
-                          width = "100%",
-                          dataTableOutput("datatable")
+                        width = "100%",
+                        dataTableOutput("datatable")
                       ),
                       
                       ## change log ----
@@ -322,8 +315,8 @@ ui <- (dashboardPage(
                     pickerInput(
                       inputId = "map_regions",
                       label = "Regions: ",
-                      choices = c(unique(responses$region)),
-                      selected = unique(responses$region),
+                      choices = region_list,
+                      selected = region_list,
                       multiple = TRUE,
                       options = list(`actions-box` = TRUE)
                     ),
@@ -332,8 +325,8 @@ ui <- (dashboardPage(
                     pickerInput(
                       inputId = "map_sector",
                       label = "Sectors: ",
-                      choices = c(unique(responses$sector)),
-                      selected = unique(responses$sector),
+                      choices = sectors,
+                      selected = sectors,
                       multiple = TRUE,
                       options = list(`actions-box` = TRUE)
                     ),
@@ -383,50 +376,6 @@ ui <- (dashboardPage(
                         withSpinner(type = 8)
                     ))
               ))
-      
-      # REPORTING -------------------------------------
-      # tabItem(
-      #   tabName = "reporting",
-      #   
-      #   div(
-      #     id = "reporting-total-box",
-      #     
-      #     box(
-      #       width = "100%",
-      #       
-      #       textOutput("reporting_totals_title"),
-      #       
-      #       downloadBttn(
-      #         "download_report_totals",
-      #         "Download",
-      #         size = "sm",
-      #         style = "simple"
-      #       ),
-      #       
-      #       dataTableOutput("reporting_totals_table") |>
-      #         withSpinner(type = 8)
-      #     )
-      #   ),
-      #   
-      #   div(
-      #     id = "reporting-sector-box",
-      #     box(
-      #       width = "100%",
-      #       
-      #       textOutput("reporting_by_sector_title"),
-      #       
-      #       downloadBttn(
-      #         "download_report_sector",
-      #         "Download",
-      #         size = "sm",
-      #         style = "simple"
-      #       ),
-      #       
-      #       dataTableOutput("reporting_by_sector_table") |>
-      #         withSpinner(type = 8)
-      #     )
-      #   )
-      # )
     )
   )
 ))
