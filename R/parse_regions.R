@@ -1,7 +1,7 @@
 # takes as input a responses df containing a region column with JSON key value pairs
 # and returns the same df with each region added as a column
 
-parse_regions <- function(responses, regions, region_column) {
+parse_regions <- function(responses, region_column, regions) {
   
   region_parsed_list <- list()
   regions_represented <- c()

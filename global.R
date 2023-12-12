@@ -16,22 +16,24 @@ library(ggchicklet)
 library(snakecase)
 library(lubridate)
 
+# load status of password protection
 source("R/secure_option.R")
 
+# load all project-specific variables
 source("R/project_variables.R")
 
 # data update in ymd format for exported file names
 data_update_ymd <- read_rds("data/temp/data_date.RDS") |> 
   gsub(pattern = " .*", replacement = "")
 
-# load temp data files if data_prep.R was run since last data download
+# load processed data files
 responses <- read_rds(here("data/temp/responses.RDS"))
 respondent_info <- read_rds(here("data/temp/respondent_info.RDS"))
 shapes <- read_rds(here("data/temp/shapes.RDS"))
 change_log <- read_rds("data/change_log.RDS")
 
 
-# load scripts
+# load functions
 source("R/make_plots.R")
 source("R/make_datatable.R")
 source("R/make_target_table.R")

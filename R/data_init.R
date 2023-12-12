@@ -1,10 +1,10 @@
 # for first data prep of a new project - before any existing responses need to be taken into account
+# if responses already exist, use data_prep.R which preserves any data alterations made in-app
 
 librarian::shelf(tidyverse, sf, janitor, here)
-source("R/parse_age_groups.R")
-source("R/parse_genders.R")
-source("R/parse_regions.R")
 source("R/project_variables.R")
+source("R/parse_json_column.R")
+source("R/parse_regions.R")
 
 writeLines("---\n** RUNNING DATA INIT **\n---")
 
@@ -34,9 +34,17 @@ select(-all_of(columns_to_remove)) |>
   mutate(gender = ifelse(gender == "", NA, gender),
          phone_number = as.character(phone_number))
 
-respondent_info <- parse_age_groups(respondent_info, age_groups)
-respondent_info <- parse_genders(respondent_info, genders)
-respondent_info <- parse_regions(respondent_info, region_list, region)
+# parse json columns
+for (i in seq(1, nrow(json_columns))) {
+  
+  respondent_info <- parse_json_column(
+    respondent_info,
+    json_columns[[i, 1]],
+    get(json_columns[[i, 2]])
+  )
+}
+
+respondent_info <- parse_regions(respondent_info, region, region_list)
 
 ## sector responses ----
 ## create df of individual entries pertaining to each sector a respondent drew a shape(s) for

@@ -29,6 +29,12 @@ age_groups <- c("<18", "18-30", "30-50", "50+")
 
 genders <- c("Male", "Female", "Non-binary", "Rather not say")
 
+json_columns <- tribble(
+  ~column, ~column_values_object,
+  "age", "age_groups",
+  "gender", "genders"
+)
+
 columns_to_remove <- c(
   "account_email",
   "is_logged_in",
