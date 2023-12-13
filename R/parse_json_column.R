@@ -14,7 +14,7 @@ parse_json_column <- function(responses, column, all_column_values) {
   column_parsed <- data.table::rbindlist(column_parsed_list, fill = TRUE) |> 
     as.data.frame()
   
-  # add columns for any unrepresented genders
+  # add columns for any unrepresented categories
   unrep <- setdiff(all_column_values, names(column_parsed))
   
   for (i in seq_along(unrep)) {
@@ -23,10 +23,23 @@ parse_json_column <- function(responses, column, all_column_values) {
     column_parsed[col_name] <- 0
   }
   
-  names <- sapply(names(column_parsed), FUN = function(x) paste0(column, "_", x)) |> 
-    str_to_lower() |> 
-    snakecase::to_snake_case()
-  names(column_parsed) <- names
+  # clean names - not using to_snake_case on age preserves "<" and "+" characters
+  if (column != "age") {
+    
+    names <- sapply(names(column_parsed), FUN = function(x) paste0(column, "_", x)) |> 
+      str_to_lower() |> 
+      snakecase::to_snake_case()
+    names(column_parsed) <- names
+    
+  } else {
+    
+    names <- sapply(names(column_parsed), FUN = function(x) paste0(column, "_", x)) |> 
+      str_to_lower()
+    names(column_parsed) <- names
+  }
+  
+  
+  
   
   column_parsed[is.na(column_parsed)] <- 0
   

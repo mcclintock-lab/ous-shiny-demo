@@ -3,7 +3,6 @@
 library(shiny)
 library(shinydashboard)
 library(shinyWidgets)
-library(shinymanager)
 library(tidyverse)
 library(here)
 library(janitor)
@@ -15,6 +14,7 @@ library(shinycssloaders)
 library(ggchicklet)
 library(snakecase)
 library(lubridate)
+devtools::load_all("packages/shinymanager")
 
 # load status of password protection
 source("R/secure_option.R")
