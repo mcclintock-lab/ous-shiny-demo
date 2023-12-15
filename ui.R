@@ -5,7 +5,7 @@ ui <- (dashboardPage(
     title = app_title,
     tags$li(
       class = "dropdown",
-      actionBttn(
+      shinyWidgets::actionBttn(
         inputId = "refresh",
         label = "Refresh App",
         icon = icon("refresh"),
@@ -118,8 +118,8 @@ ui <- (dashboardPage(
                 shinydashboardPlus::boxDropdownItem("Save target changes", id = "save_targets")
               ),
               
-              dataTableOutput("target_table") |>
-                withSpinner(type = 8)
+              DT::dataTableOutput("target_table") |>
+                shinycssloaders::withSpinner(type = 8)
             )
           )
         ),
@@ -148,7 +148,7 @@ ui <- (dashboardPage(
                   ),
                   
                   plotOutput("resp_plot") |>
-                    withSpinner(type = 8)
+                    shinycssloaders::withSpinner(type = 8)
                 )
               ),
               
@@ -170,7 +170,7 @@ ui <- (dashboardPage(
                   ),
                   
                   plotOutput("demo_plot") |>
-                    withSpinner(type = 8)
+                    shinycssloaders::withSpinner(type = 8)
                 )
               )
             ))
@@ -197,20 +197,20 @@ ui <- (dashboardPage(
                         title = "All Data",
                         
                         # view in map button
-                        actionBttn(
+                        shinyWidgets::actionBttn(
                           "dt_view_shapes",
                           "View in Map",
                           style = "simple",
                           icon = icon("map")
                         ),
                         # download shapes
-                        downloadBttn(
+                        shinyWidgets::downloadBttn(
                           "download_responses",
                           "Download",
                           style = "simple",
                         ),
                         width = "100%",
-                        dataTableOutput("datatable")
+                        DT::dataTableOutput("datatable")
                       ),
                       
                       ## change log ----
@@ -218,7 +218,7 @@ ui <- (dashboardPage(
                         title = "Change Log",
                         box(
                           width = 12,
-                          dataTableOutput("change_log_table")
+                          DT::dataTableOutput("change_log_table")
                         )
                       ),
                       
@@ -264,7 +264,7 @@ ui <- (dashboardPage(
                               id = "toggle_fixed")),
                           title = p(div(
                             id = "corrections_title",
-                            actionBttn(
+                            shinyWidgets::actionBttn(
                               "submit_correction",
                               "Submit new ",
                               style = "simple",
@@ -274,7 +274,7 @@ ui <- (dashboardPage(
                           )),
                           width = 12,
                           
-                          dataTableOutput("corrections_table")
+                          DT::dataTableOutput("corrections_table")
                         )
                       )
                     )
@@ -295,7 +295,7 @@ ui <- (dashboardPage(
                     width = 12,
                     
                     # clear filters
-                    actionBttn(
+                    shinyWidgets::actionBttn(
                       "clear_shape_filters",
                       "Clear Map & Filters",
                       style = "simple",
@@ -304,7 +304,7 @@ ui <- (dashboardPage(
                     ),
                     
                     # download shapes
-                    downloadBttn(
+                    shinyWidgets::downloadBttn(
                       "download_filtered_shapes",
                       "Export Current Shapes",
                       style = "simple",
@@ -312,7 +312,7 @@ ui <- (dashboardPage(
                     ),
                     
                     # region filter dropdown
-                    pickerInput(
+                    shinyWidgets::pickerInput(
                       inputId = "map_regions",
                       label = "Regions: ",
                       choices = region_list,
@@ -322,7 +322,7 @@ ui <- (dashboardPage(
                     ),
                     
                     # sector filter dropdown
-                    pickerInput(
+                    shinyWidgets::pickerInput(
                       inputId = "map_sector",
                       label = "Sectors: ",
                       choices = sectors,
@@ -351,7 +351,7 @@ ui <- (dashboardPage(
                     
                     div(
                       id = "filter-id-toggle",
-                      switchInput(
+                      shinyWidgets::switchInput(
                         "filter_id",
                         label = NULL,
                         value = FALSE,
@@ -372,8 +372,8 @@ ui <- (dashboardPage(
                     
                     box(
                       width = "50%",
-                      leafletOutput("map") |>
-                        withSpinner(type = 8)
+                      leaflet::leafletOutput("map") |>
+                        shinycssloaders::withSpinner(type = 8)
                     ))
               ))
     )

@@ -118,15 +118,20 @@ write_rds(respondent_info, here("data/temp/respondent_info.RDS"))
 write_rds(shapes, here("data/temp/shapes.RDS"))
 
 # if no new responses were added but existing responses were removed on seasketch
-} else if (n_removed_response_ids != 0) {
+} else if (n_new_responses == 0 & n_removed_response_ids != 0) {
   
   prep_statement <- paste0("---\n** REMOVING ", n_removed_response_ids, " OLD RESPONSES **\n---")
   writeLines(prep_statement)
   
-  responses <- existing_local_responses
-  respondent_info <- existing_local_respondent_info
+  responses <- existing_local_responses |> 
+    filter(!response_id %in% removed_response_ids)
   
-  shapes <- shapes |>
+  respondent_info <- existing_local_respondent_info |> 
+    filter(!response_id %in% removed_response_ids)
+  
+  existing_local_shapes <- read_rds("data/temp/shapes.RDS")
+  
+  shapes <- existing_local_shapes |>
     right_join(responses) |>
     st_make_valid() |>
     select(

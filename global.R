@@ -2,17 +2,8 @@
 
 library(shiny)
 library(shinydashboard)
-library(shinyWidgets)
 library(tidyverse)
 library(here)
-library(janitor)
-library(DT)
-library(knitr)
-library(leaflet)
-library(sf)
-library(shinycssloaders)
-library(ggchicklet)
-library(snakecase)
 library(lubridate)
 devtools::load_all("packages/shinymanager")
 

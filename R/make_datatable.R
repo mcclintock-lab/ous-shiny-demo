@@ -9,7 +9,7 @@ make_datatable <- function(responses, edit_data_status) {
   
   if (edit_data_status == FALSE) {
 
-    table = datatable(
+    table = DT::datatable(
       response_table,
       filter = list(position = "top"),
       plugins = "accent-neutralise",
@@ -23,7 +23,7 @@ make_datatable <- function(responses, edit_data_status) {
     
   } else {
     
-    table = datatable(
+    table = DT::datatable(
       response_table,
       filter = list(position = "top"),
       plugins = "accent-neutralise",
@@ -62,7 +62,7 @@ make_dups_table <- function() {
   
   assign("n_dups", n_dups, envir = .GlobalEnv)
   
-  datatable(
+  DT::datatable(
     exact_dups,
     colnames = c("Response ID", "Duplicate ID"),
     class = list(stripe = FALSE),
@@ -80,7 +80,7 @@ make_corrections_table <- function(corrections, edit_data_status) {
   
   if (edit_data_status == FALSE) {
     
-    table <- datatable(
+    table <- DT::datatable(
       corrections,
       colnames = c("Response ID", "Correction", "Reason", "User", "Date", "Fixed"),
       escape = FALSE,
@@ -95,7 +95,7 @@ make_corrections_table <- function(corrections, edit_data_status) {
         ))
       )
     ) |>
-      formatStyle(
+      DT::formatStyle(
         columns = 0:ncol(corrections),
         valueColumns = "fixed",
         backgroundColor = styleEqual("✅", "#dbf5d7")
@@ -105,7 +105,7 @@ make_corrections_table <- function(corrections, edit_data_status) {
     
   } else {
     
-    table <- datatable(
+    table <- DT::datatable(
       corrections,
       colnames = c("Response ID", "Correction", "Reason", "User", "Date", "Fixed"),
       escape = FALSE,
@@ -122,7 +122,7 @@ make_corrections_table <- function(corrections, edit_data_status) {
         ))
       )
     ) |>
-      formatStyle(
+      DT::formatStyle(
         columns = 0:ncol(corrections),
         valueColumns = "fixed",
         backgroundColor = styleEqual("✅", "#dbf5d7")

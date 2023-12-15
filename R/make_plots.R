@@ -16,8 +16,8 @@ make_sector_plot <- function(metric, responses) {
              sector = as.factor(sector))
     
     ggplot(df, aes(x = reorder(sector, n), y = n)) +
-      geom_chicklet(fill = "#2E4052", radius = grid::unit(5, "pt")) +
-      geom_chicklet(aes(x = reorder(sector, n), y = target), color = "green", fill = "green",
+      ggchicklet::geom_chicklet(fill = "#2E4052", radius = grid::unit(5, "pt")) +
+      ggchicklet::geom_chicklet(aes(x = reorder(sector, n), y = target), color = "green", fill = "green",
                     alpha = 0.05, radius = grid::unit(5, "pt")) +  
       coord_flip() +
       labs(x = "Sector\n", y = "\nCount") +
@@ -40,7 +40,7 @@ make_sector_plot <- function(metric, responses) {
              sector = as.factor(sector))
     
     ggplot(df, aes(x = reorder(sector, n), y = n)) +
-      geom_chicklet(fill = "#2E4052", radius = grid::unit(5, "pt")) +
+      ggchicklet::geom_chicklet(fill = "#2E4052", radius = grid::unit(5, "pt")) +
       coord_flip() +
       labs(x = "Sector\n", y = "\nCount") +
       theme_minimal() +
@@ -69,7 +69,7 @@ make_demo_plot <- function(respondent_info, metric) {
     age_counts <- age_counts[c(2,3,4,1),]
     
     ggplot(age_counts, aes(x = age_group, y = count)) +
-      geom_chicklet(fill = "#2E4052") + 
+      ggchicklet::geom_chicklet(fill = "#2E4052") + 
       labs(x = "\nAge group", y = "Number of participants\n") +
       theme_minimal() +
       theme(
@@ -90,7 +90,7 @@ make_demo_plot <- function(respondent_info, metric) {
              gender = snakecase::to_sentence_case(gender)) 
     
     ggplot(gender_counts, aes(x = gender, y = count)) +
-      geom_chicklet(fill = "#2E4052") + 
+      ggchicklet::geom_chicklet(fill = "#2E4052") + 
       labs(x = "\nGender", y = "Number of participants\n") +
       theme_minimal() +
       theme(

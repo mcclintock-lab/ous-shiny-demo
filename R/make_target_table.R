@@ -30,7 +30,7 @@ make_target_table <- function(responses) {
     colorRampPalette(c("white", "#EAFCEC"))(length(breaks) + 1)
   
   target_table <-
-    datatable(
+    DT::datatable(
       targets_progress,
       colnames = c(
         "Metric",
@@ -50,17 +50,17 @@ make_target_table <- function(responses) {
       )
     ) |>
     # percent color ramp formatting
-    formatStyle(
+    DT::formatStyle(
       columns = "percent",
-      backgroundColor = styleInterval(breaks, colors),
+      backgroundColor = DT::styleInterval(breaks, colors),
       "border-radius" = "5px"
     ) |>
     # removes row striping
-    formatStyle(
+    DT::formatStyle(
       columns = -1:ncol(targets_progress) + 1,
       "box-shadow" = "inset 0 0 0 9999px rgba(0, 0, 0, 0)"
     ) |> 
-    formatPercentage(columns = "percent",
+    DT::formatPercentage(columns = "percent",
                      mark = ".",
                      digits = 0)
   

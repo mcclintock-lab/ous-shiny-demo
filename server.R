@@ -126,7 +126,7 @@ shinyServer(function(input, output, session) {
   ## targets ------------------------------------------------
   
   ### target table ----
-  output$target_table <- renderDataTable({
+  output$target_table <- DT::renderDataTable({
     make_target_table(responses = responses_reactive())
   })
   
@@ -168,7 +168,7 @@ shinyServer(function(input, output, session) {
                envir = .GlobalEnv)
         
         # rerender table on save
-        output$target_table <- renderDataTable({
+        output$target_table <- DT::renderDataTable({
           make_target_table(responses = responses())
         })
         
@@ -273,7 +273,7 @@ shinyServer(function(input, output, session) {
   
   ## main table ----
   output$datatable <-
-    renderDataTable(expr = make_datatable(responses = responses(),
+    DT::renderDataTable(expr = make_datatable(responses = responses(),
                                           edit_data_status = edit_data_status()),
                     server = FALSE)
   
@@ -291,7 +291,7 @@ shinyServer(function(input, output, session) {
       
       updateTextInput(inputId = "shape_id", value = selected_id)
       
-      updateSwitchInput(inputId = "filter_id", value = TRUE)
+      shinyWidgets::updateSwitchInput(inputId = "filter_id", value = TRUE)
       
     }
   })
@@ -436,12 +436,12 @@ shinyServer(function(input, output, session) {
       write_rds(changed_shapes, "data/temp/shapes.RDS")
       
       # rerender table
-      output$datatable <- renderDataTable({
+      output$datatable <- DT::renderDataTable({
         make_datatable(responses = responses_edited(),
                        edit_data_status = edit_data_status())
       })
       
-      output$change_log_table <- renderDataTable({
+      output$change_log_table <- DT::renderDataTable({
         make_change_log_table(change_log = change_log)
       }) 
     }
@@ -463,12 +463,12 @@ shinyServer(function(input, output, session) {
     arrange(by = desc(fixed))
   
   output$corrections_table <-
-    renderDataTable(make_corrections_table(corrections_data, edit_data_status()))
+    DT::renderDataTable(make_corrections_table(corrections_data, edit_data_status()))
   
   corrections <- reactiveVal()
   corrections(corrections_data)
   
-  corrections_proxy <- dataTableProxy("corrections_table")
+  corrections_proxy <- DT::dataTableProxy("corrections_table")
   
   # submit new correction
   observeEvent(input$submit_correction, {
@@ -564,7 +564,7 @@ shinyServer(function(input, output, session) {
   })
   
   ## changelog ----
-  output$change_log_table <- renderDataTable({
+  output$change_log_table <- DT::renderDataTable({
     make_change_log_table(change_log = change_log)
   })
   
@@ -572,12 +572,14 @@ shinyServer(function(input, output, session) {
   output$n_dups <- renderText(nrow("n_dups"))
   outputOptions(output, "n_dups", suspendWhenHidden = FALSE)
   
-  output$dup_table <- renderDataTable(make_dups_table())
+  output$dup_table <- DT::renderDataTable(make_dups_table())
   
   
   # SHAPE VIEWER -------------------------------------------------
   
-  output$map <- renderLeaflet({
+  output$map <- leaflet::renderLeaflet({
+    library(sf)
+    
     shapes <- shapes_reactive()
     
     if (input$filter_id == TRUE) {
@@ -622,17 +624,17 @@ shinyServer(function(input, output, session) {
     fill_opacity <- ifelse(fill_opacity > 0.3, 0.3, fill_opacity)
     
     # render map
-    leaflet(shapes) |>
-      addProviderTiles("Esri.WorldStreetMap") |>
+    leaflet::leaflet(shapes) |>
+      leaflet::addProviderTiles("Esri.WorldStreetMap") |>
       # addTiles("https://tiles.stadiamaps.com/tiles/outdoors/{z}/{x}/{y}{r}.png",
       # options = providerTileOptions(apikey = "")) |>
-      addPolygons(
+      leaflet::addPolygons(
         stroke = TRUE,
         weight = 0.02,
         color = "black",
         fillOpacity = fill_opacity,
         fillColor = "red",
-        highlight = highlightOptions(
+        highlight = leaflet::highlightOptions(
           color = 'yellow',
           weight = 5,
           bringToFront = FALSE,
@@ -652,8 +654,8 @@ shinyServer(function(input, output, session) {
           shapes$facilitator_name
         )
       ) |>
-      addPolylines(color = "black", weight = 0.5) |>
-      addControl(shapes_displayed, position = "topright")
+      leaflet::addPolylines(color = "black", weight = 0.5) |>
+      leaflet::addControl(shapes_displayed, position = "topright")
   })
   
   
@@ -664,27 +666,27 @@ shinyServer(function(input, output, session) {
   
   # clear filter button
   observeEvent(input$clear_shape_filters, {
-    updatePickerInput(session = getDefaultReactiveDomain(),
+    shinyWidgets::updatePickerInput(session = getDefaultReactiveDomain(),
                       inputId = "map_regions",
                       selected = character(0))
     
-    updateMaterialSwitch(session = getDefaultReactiveDomain(),
+    shinyWidgets::updateMaterialSwitch(session = getDefaultReactiveDomain(),
                          inputId = "map_regions_all",
                          value = FALSE)
     
-    updatePickerInput(session = getDefaultReactiveDomain(),
+    shinyWidgets::updatePickerInput(session = getDefaultReactiveDomain(),
                       inputId = "map_sector",
                       selected = character(0))
     
-    updateMaterialSwitch(session = getDefaultReactiveDomain(),
+    shinyWidgets::updateMaterialSwitch(session = getDefaultReactiveDomain(),
                          inputId = "map_sector_all",
                          value = FALSE)
     
-    updateSelectInput(inputId = "map_facil_var", selected = "both")
+    shinyWidgets::updateSelectInput(inputId = "map_facil_var", selected = "both")
     
-    updateSwitchInput(inputId = "filter_id", value = FALSE)
+    shinyWidgets::updateSwitchInput(inputId = "filter_id", value = FALSE)
     
-    updateTextInput(inputId = "shape_id", value = character(0))
+    shinyWidgets::updateTextInput(inputId = "shape_id", value = character(0))
     
   })
   
@@ -724,8 +726,8 @@ shinyServer(function(input, output, session) {
   #   )
   # })
   # 
-  # output$reporting_totals_table <- renderDataTable(
-  #   datatable(
+  # output$reporting_totals_table <- DT::renderDataTable(
+  #   DT::datatable(
   #     reporting_totals(),
   #     options = list(
   #       pageLength = 100,
@@ -737,8 +739,8 @@ shinyServer(function(input, output, session) {
   #   server = FALSE
   # )
   # 
-  # output$reporting_by_sector_table <- renderDataTable(
-  #   datatable(
+  # output$reporting_by_sector_table <- DT::renderDataTable(
+  #   DT::datatable(
   #     reporting_by_sector(),
   #     options = list(
   #       pageLength = 100,
