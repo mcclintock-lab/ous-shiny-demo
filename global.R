@@ -3,6 +3,7 @@
 library(shiny)
 library(shinydashboard)
 library(tidyverse)
+library(sf)
 library(here)
 library(lubridate)
 devtools::load_all("packages/shinymanager")

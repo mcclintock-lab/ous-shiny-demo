@@ -7,7 +7,8 @@ make_change_log <- function(df1, df2, current_log, user) {
   diff_indexes <- which(diff, arr.ind = TRUE) |> 
     as.data.frame()
   
-  diff_ids <- diff_indexes$row
+  diff_ids_rows <- diff_indexes$row
+  diff_ids <- df1$response_id[diff_ids_rows]
   
   edited_fields <- c()
   
