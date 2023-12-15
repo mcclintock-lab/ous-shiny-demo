@@ -74,12 +74,12 @@ shinyServer(function(input, output, session) {
   data_update_reader <- reactiveFileReader(
     intervalMillis = 1.8e3,
     session = session,
-    filePath = "data/temp/data_update.txt",
-    readFunc = readLines
+    filePath = "data/temp/data_date.RDS",
+    readFunc = read_rds
   )
   
-  data_update <- reactive(data_update_reader() |>
-                            as_datetime(tz = "America/Los_Angeles"))
+  data_update <- reactive(data_update_reader())
+  
   
   # REFRESH APP ----------------------------------------------
   observeEvent(input$refresh, {
@@ -104,22 +104,10 @@ shinyServer(function(input, output, session) {
     )
   })
   
-  max_rep <- reactiveVal()
-  
-  observe({
-    max_rep(
-      responses_reactive() |>
-      select(response_id, n_rep) |>
-      group_by(response_id) |> 
-      summarize(n_rep = max(n_rep))
-    )
-  })
-
-  
   # number represented box
   output$individuals_represented <- renderValueBox({
     valueBox(
-      sum(max_rep()$n_rep),
+      sum(respondent_info()$participants),
       HTML(paste0("Individuals", br(), "Represented")),
       icon = icon("users")
     )
@@ -138,7 +126,7 @@ shinyServer(function(input, output, session) {
   ## targets ------------------------------------------------
   
   ### target table ----
-  output$target_table <- renderDataTable({
+  output$target_table <- DT::renderDataTable({
     make_target_table(responses = responses_reactive())
   })
   
@@ -180,7 +168,7 @@ shinyServer(function(input, output, session) {
                envir = .GlobalEnv)
         
         # rerender table on save
-        output$target_table <- renderDataTable({
+        output$target_table <- DT::renderDataTable({
           make_target_table(responses = responses())
         })
         
@@ -198,9 +186,27 @@ shinyServer(function(input, output, session) {
   
   ## demographic plot ----
   
+  # initially define metric that can be changed with the box dropdown menu
+  demo_plot_metric <- reactiveVal()
+  demo_plot_metric("age")
+  
   output$demo_plot <- renderPlot({
-    make_demo_plot(respondent_info = respondent_info())
+    make_demo_plot(respondent_info = respondent_info(),
+                   metric = demo_plot_metric())
     
+  })
+  
+  # observe dropdown input
+  observeEvent(input$age, {
+    if (demo_plot_metric() != "age") {
+      demo_plot_metric("age")
+    }
+  })
+  
+  observeEvent(input$gender, {
+    if (demo_plot_metric() != "gender") {
+      demo_plot_metric("gender")
+    }
   })
   
   ## sector plot ------------------------------------
@@ -267,7 +273,7 @@ shinyServer(function(input, output, session) {
   
   ## main table ----
   output$datatable <-
-    renderDataTable(expr = make_datatable(responses = responses(),
+    DT::renderDataTable(expr = make_datatable(responses = responses(),
                                           edit_data_status = edit_data_status()),
                     server = FALSE)
   
@@ -285,13 +291,13 @@ shinyServer(function(input, output, session) {
       
       updateTextInput(inputId = "shape_id", value = selected_id)
       
-      updateSwitchInput(inputId = "filter_id", value = TRUE)
+      shinyWidgets::updateSwitchInput(inputId = "filter_id", value = TRUE)
       
     }
   })
   
   ### data editing ----
-    
+  
   # init reactive objects
   latest_save <- reactiveVal()
   responses_edited <- reactiveVal()
@@ -356,7 +362,7 @@ shinyServer(function(input, output, session) {
         
         if (sector_changed == TRUE) {
           
-          if (!changed_val %in% sector_ids$sector) {
+          if (!changed_val %in% sectors) {
             
             show_alert(title = "That sector is not recognized",
                        text = "Please check spelling, punctuation, and capitalization",
@@ -430,12 +436,12 @@ shinyServer(function(input, output, session) {
       write_rds(changed_shapes, "data/temp/shapes.RDS")
       
       # rerender table
-      output$datatable <- renderDataTable({
+      output$datatable <- DT::renderDataTable({
         make_datatable(responses = responses_edited(),
                        edit_data_status = edit_data_status())
       })
       
-      output$change_log_table <- renderDataTable({
+      output$change_log_table <- DT::renderDataTable({
         make_change_log_table(change_log = change_log)
       }) 
     }
@@ -457,12 +463,12 @@ shinyServer(function(input, output, session) {
     arrange(by = desc(fixed))
   
   output$corrections_table <-
-    renderDataTable(make_corrections_table(corrections_data, edit_data_status()))
+    DT::renderDataTable(make_corrections_table(corrections_data, edit_data_status()))
   
   corrections <- reactiveVal()
   corrections(corrections_data)
   
-  corrections_proxy <- dataTableProxy("corrections_table")
+  corrections_proxy <- DT::dataTableProxy("corrections_table")
   
   # submit new correction
   observeEvent(input$submit_correction, {
@@ -500,7 +506,7 @@ shinyServer(function(input, output, session) {
                             value = character(0))
       } else {
         show_alert("The submitted response ID doesn't exist in the dataset",
-                         type = "warning")
+                   type = "warning")
       }
     }
     
@@ -548,7 +554,7 @@ shinyServer(function(input, output, session) {
   # button styling
   observe({
     if (!is.null(write_status()) && write_status() == FALSE) {
-
+      
       output$toggle_fixed_button <- renderText("<div style='color:#bababa'>◽ Toggle fixed</div>")
       
     } else {
@@ -558,7 +564,7 @@ shinyServer(function(input, output, session) {
   })
   
   ## changelog ----
-  output$change_log_table <- renderDataTable({
+  output$change_log_table <- DT::renderDataTable({
     make_change_log_table(change_log = change_log)
   })
   
@@ -566,12 +572,14 @@ shinyServer(function(input, output, session) {
   output$n_dups <- renderText(nrow("n_dups"))
   outputOptions(output, "n_dups", suspendWhenHidden = FALSE)
   
-  output$dup_table <- renderDataTable(make_dups_table())
+  output$dup_table <- DT::renderDataTable(make_dups_table())
   
   
   # SHAPE VIEWER -------------------------------------------------
   
-  output$map <- renderLeaflet({
+  output$map <- leaflet::renderLeaflet({
+    library(sf)
+    
     shapes <- shapes_reactive()
     
     if (input$filter_id == TRUE) {
@@ -583,13 +591,6 @@ shinyServer(function(input, output, session) {
         filter(response_id %in% shape_id)
       
     } else {
-      if ("all" %in% input$map_regions) {
-        map_regions <- unique(shapes$region)
-        
-      } else {
-        map_regions <- input$map_regions
-        
-      }
       
       if (input$map_facil_var == "both") {
         map_facil <- c(TRUE, FALSE)
@@ -598,19 +599,16 @@ shinyServer(function(input, output, session) {
         map_facil <- input$map_facil_var
       }
       
-      if ("All" %in% input$map_sector) {
-        shapes <- shapes |>
-          filter(region %in% map_regions,
-                 is_facilitated %in% map_facil)
-        
-      } else {
-        shapes <- shapes |>
-          filter(
-            region %in% map_regions,
-            sector %in% input$map_sector,
-            is_facilitated %in% map_facil
-          )
-      }
+      regions_represented_split <- map(shapes$regions_represented, function(x) str_split_1(x, ","))
+      region_detected <- sapply(regions_represented_split, function(x) length(intersect(x, input$map_regions)) > 0)
+      
+      shapes <- shapes[region_detected, ]
+      
+      shapes <- shapes |>
+        filter(
+          sector %in% input$map_sector,
+          is_facilitated %in% map_facil
+        )
     }
     
     # save filtered shapes as reactive expression to global env for shape export
@@ -622,18 +620,21 @@ shinyServer(function(input, output, session) {
              div(id = "shapes-number", nrow(shapes)))
     })
     
+    fill_opacity <- 0.5 / log(nrow(shapes))
+    fill_opacity <- ifelse(fill_opacity > 0.3, 0.3, fill_opacity)
+    
     # render map
-    leaflet(shapes) |>
-      addProviderTiles("Esri.WorldStreetMap") |>
+    leaflet::leaflet(shapes) |>
+      leaflet::addProviderTiles("Esri.WorldStreetMap") |>
       # addTiles("https://tiles.stadiamaps.com/tiles/outdoors/{z}/{x}/{y}{r}.png",
       # options = providerTileOptions(apikey = "")) |>
-      addPolygons(
+      leaflet::addPolygons(
         stroke = TRUE,
         weight = 0.02,
         color = "black",
-        fillOpacity = 0.1,
+        fillOpacity = fill_opacity,
         fillColor = "red",
-        highlight = highlightOptions(
+        highlight = leaflet::highlightOptions(
           color = 'yellow',
           weight = 5,
           bringToFront = FALSE,
@@ -653,8 +654,8 @@ shinyServer(function(input, output, session) {
           shapes$facilitator_name
         )
       ) |>
-      addPolylines(color = "black", weight = 0.5) |>
-      addControl(shapes_displayed, position = "topright")
+      leaflet::addPolylines(color = "black", weight = 0.5) |>
+      leaflet::addControl(shapes_displayed, position = "topright")
   })
   
   
@@ -665,27 +666,27 @@ shinyServer(function(input, output, session) {
   
   # clear filter button
   observeEvent(input$clear_shape_filters, {
-    updatePickerInput(session = getDefaultReactiveDomain(),
+    shinyWidgets::updatePickerInput(session = getDefaultReactiveDomain(),
                       inputId = "map_regions",
                       selected = character(0))
     
-    updateMaterialSwitch(session = getDefaultReactiveDomain(),
+    shinyWidgets::updateMaterialSwitch(session = getDefaultReactiveDomain(),
                          inputId = "map_regions_all",
                          value = FALSE)
     
-    updatePickerInput(session = getDefaultReactiveDomain(),
+    shinyWidgets::updatePickerInput(session = getDefaultReactiveDomain(),
                       inputId = "map_sector",
                       selected = character(0))
     
-    updateMaterialSwitch(session = getDefaultReactiveDomain(),
+    shinyWidgets::updateMaterialSwitch(session = getDefaultReactiveDomain(),
                          inputId = "map_sector_all",
                          value = FALSE)
     
-    updateSelectInput(inputId = "map_facil_var", selected = "both")
+    shinyWidgets::updateSelectInput(inputId = "map_facil_var", selected = "both")
     
-    updateSwitchInput(inputId = "filter_id", value = FALSE)
+    shinyWidgets::updateSwitchInput(inputId = "filter_id", value = FALSE)
     
-    updateTextInput(inputId = "shape_id", value = character(0))
+    shinyWidgets::updateTextInput(inputId = "shape_id", value = character(0))
     
   })
   
@@ -701,81 +702,81 @@ shinyServer(function(input, output, session) {
   
   
   # REPORTING -----------------------------
-  
-  reporting_totals <- reactiveVal()
-  
-  observe({
-    reporting_totals(
-      make_reporting_totals(
-        responses = responses_reactive(),
-        shapes = shapes_reactive(),
-        max_rep = max_rep()
-      )
-    )
-  })
-  
-  reporting_by_sector <- reactiveVal()
-  
-  observe({
-    reporting_by_sector(
-      make_reporting_by_sector(
-        responses = responses_reactive(),
-        shapes = shapes_reactive()
-      )
-    )
-  })
-  
-  output$reporting_totals_table <- renderDataTable(
-    datatable(
-      reporting_totals(),
-      options = list(
-        pageLength = 100,
-        dom = "t",
-        lengthChange = FALSE,
-        searching = FALSE
-      )
-    ),
-    server = FALSE
-  )
-  
-  output$reporting_by_sector_table <- renderDataTable(
-    datatable(
-      reporting_by_sector(),
-      options = list(
-        pageLength = 100,
-        dom = "t",
-        lengthChange = FALSE,
-        searching = FALSE,
-        columnDefs = list(list(width = '250px', targets = "Sector"))
-      )
-    ),
-    server = FALSE
-  )
-  
-  # reporting table titles
-  output$reporting_totals_title <- renderText("Totals")
-  output$reporting_by_sector_title <- renderText("By Sector")
-  
-  ## download CSVs ----
-  data_report_totals <- reactive(reporting_totals())
-  
-  output$download_report_totals <- downloadHandler(
-    filename = function() {
-      paste0(project, "_ous_reporting_totals.csv")
-    },
-    content = function(file) {
-      write_csv(data_report_totals(), file)
-    }
-  )
-  
-  data_report_sector <- reactive(reporting_by_sector())
-  
-  output$download_report_sector <- downloadHandler(
-    filename = function() {
-      paste0(project, "_ous_reporting_by_sector.csv")
-    },
-    content = function(file) {
-      write_csv(data_report_sector(), file)
-    }
-  )
+  # 
+  # reporting_totals <- reactiveVal()
+  # 
+  # observe({
+  #   reporting_totals(
+  #     make_reporting_totals(
+  #       responses = responses_reactive(),
+  #       shapes = shapes_reactive(),
+  #       max_rep = max_rep()
+  #     )
+  #   )
+  # })
+  # 
+  # reporting_by_sector <- reactiveVal()
+  # 
+  # observe({
+  #   reporting_by_sector(
+  #     make_reporting_by_sector(
+  #       responses = responses_reactive(),
+  #       shapes = shapes_reactive()
+  #     )
+  #   )
+  # })
+  # 
+  # output$reporting_totals_table <- DT::renderDataTable(
+  #   DT::datatable(
+  #     reporting_totals(),
+  #     options = list(
+  #       pageLength = 100,
+  #       dom = "t",
+  #       lengthChange = FALSE,
+  #       searching = FALSE
+  #     )
+  #   ),
+  #   server = FALSE
+  # )
+  # 
+  # output$reporting_by_sector_table <- DT::renderDataTable(
+  #   DT::datatable(
+  #     reporting_by_sector(),
+  #     options = list(
+  #       pageLength = 100,
+  #       dom = "t",
+  #       lengthChange = FALSE,
+  #       searching = FALSE,
+  #       columnDefs = list(list(width = '250px', targets = "Sector"))
+  #     )
+  #   ),
+  #   server = FALSE
+  # )
+  # 
+  # # reporting table titles
+  # output$reporting_totals_title <- renderText("Totals")
+  # output$reporting_by_sector_title <- renderText("By Sector")
+  # 
+  # ## download CSVs ----
+  # data_report_totals <- reactive(reporting_totals())
+  # 
+  # output$download_report_totals <- downloadHandler(
+  #   filename = function() {
+  #     paste0(project, "_ous_reporting_totals.csv")
+  #   },
+  #   content = function(file) {
+  #     write_csv(data_report_totals(), file)
+  #   }
+  # )
+  # 
+  # data_report_sector <- reactive(reporting_by_sector())
+  # 
+  # output$download_report_sector <- downloadHandler(
+  #   filename = function() {
+  #     paste0(project, "_ous_reporting_by_sector.csv")
+  #   },
+  #   content = function(file) {
+  #     write_csv(data_report_sector(), file)
+  #   }
+  # )
 })

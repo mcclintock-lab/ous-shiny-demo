@@ -2,18 +2,10 @@
 
 ui <- (dashboardPage(
   dashboardHeader(
-    title = "Ocean Use Survey",
+    title = app_title,
     tags$li(
       class = "dropdown",
-      id = "disclaimer",
-      # HTML(
-      #   "*This app contains <a id=generate-data-link target=_blank href='https://github.com/mcclintock-lab/ous-shiny-demo/blob/main/R/generate_data.R'>randomly generated data</a> solely for demonstration purposes"
-      # )
-      "*This app contains fabricated data purely for demonstration purposes"
-    ),
-    tags$li(
-      class = "dropdown",
-      actionBttn(
+      shinyWidgets::actionBttn(
         inputId = "refresh",
         label = "Refresh App",
         icon = icon("refresh"),
@@ -39,11 +31,6 @@ ui <- (dashboardPage(
         "Shape Viewer",
         tabName = "shapes",
         icon = icon("map", verify_fa = F)
-      ),
-      menuItem(
-        "Reporting",
-        tabName = "reporting",
-        icon = icon("file-lines", verify_fa = F)
       )
     )
   ),
@@ -86,7 +73,7 @@ ui <- (dashboardPage(
                 div(id = "latest-data-box",
                     box(
                       tags$a(
-                        href = "https://seasketch.org",
+                        href = seasketch_url,
                         target = "_blank",
                         img(src = "images/seasketch-logo.png",
                             style = "height: 35px; margin-bottom: 17px; margin-top: 10px;"),
@@ -131,8 +118,8 @@ ui <- (dashboardPage(
                 shinydashboardPlus::boxDropdownItem("Save target changes", id = "save_targets")
               ),
               
-              dataTableOutput("target_table") |>
-                withSpinner(type = 8)
+              DT::dataTableOutput("target_table") |>
+                shinycssloaders::withSpinner(type = 8)
             )
           )
         ),
@@ -161,7 +148,7 @@ ui <- (dashboardPage(
                   ),
                   
                   plotOutput("resp_plot") |>
-                    withSpinner(type = 8)
+                    shinycssloaders::withSpinner(type = 8)
                 )
               ),
               
@@ -176,8 +163,14 @@ ui <- (dashboardPage(
                   width = 12,
                   collapsible = TRUE,
                   
+                  dropdownMenu = shinydashboardPlus::boxDropdown(
+                    shinydashboardPlus::boxDropdownItem("Age", id = "age"),
+                    shinydashboardPlus::boxDropdownItem("Gender", id = "gender")
+                    
+                  ),
+                  
                   plotOutput("demo_plot") |>
-                    withSpinner(type = 8)
+                    shinycssloaders::withSpinner(type = 8)
                 )
               )
             ))
@@ -204,20 +197,20 @@ ui <- (dashboardPage(
                         title = "All Data",
                         
                         # view in map button
-                        actionBttn(
+                        shinyWidgets::actionBttn(
                           "dt_view_shapes",
                           "View in Map",
                           style = "simple",
                           icon = icon("map")
                         ),
                         # download shapes
-                        downloadBttn(
+                        shinyWidgets::downloadBttn(
                           "download_responses",
                           "Download",
                           style = "simple",
                         ),
-                          width = "100%",
-                          dataTableOutput("datatable")
+                        width = "100%",
+                        DT::dataTableOutput("datatable")
                       ),
                       
                       ## change log ----
@@ -225,7 +218,7 @@ ui <- (dashboardPage(
                         title = "Change Log",
                         box(
                           width = 12,
-                          dataTableOutput("change_log_table")
+                          DT::dataTableOutput("change_log_table")
                         )
                       ),
                       
@@ -271,7 +264,7 @@ ui <- (dashboardPage(
                               id = "toggle_fixed")),
                           title = p(div(
                             id = "corrections_title",
-                            actionBttn(
+                            shinyWidgets::actionBttn(
                               "submit_correction",
                               "Submit new ",
                               style = "simple",
@@ -281,7 +274,7 @@ ui <- (dashboardPage(
                           )),
                           width = 12,
                           
-                          dataTableOutput("corrections_table")
+                          DT::dataTableOutput("corrections_table")
                         )
                       )
                     )
@@ -302,7 +295,7 @@ ui <- (dashboardPage(
                     width = 12,
                     
                     # clear filters
-                    actionBttn(
+                    shinyWidgets::actionBttn(
                       "clear_shape_filters",
                       "Clear Map & Filters",
                       style = "simple",
@@ -311,7 +304,7 @@ ui <- (dashboardPage(
                     ),
                     
                     # download shapes
-                    downloadBttn(
+                    shinyWidgets::downloadBttn(
                       "download_filtered_shapes",
                       "Export Current Shapes",
                       style = "simple",
@@ -319,21 +312,21 @@ ui <- (dashboardPage(
                     ),
                     
                     # region filter dropdown
-                    pickerInput(
+                    shinyWidgets::pickerInput(
                       inputId = "map_regions",
                       label = "Regions: ",
-                      choices = c(unique(responses$region)),
-                      selected = unique(responses$region),
+                      choices = region_list,
+                      selected = region_list,
                       multiple = TRUE,
                       options = list(`actions-box` = TRUE)
                     ),
                     
                     # sector filter dropdown
-                    pickerInput(
+                    shinyWidgets::pickerInput(
                       inputId = "map_sector",
                       label = "Sectors: ",
-                      choices = c(unique(responses$sector)),
-                      selected = unique(responses$sector),
+                      choices = sectors,
+                      selected = sectors,
                       multiple = TRUE,
                       options = list(`actions-box` = TRUE)
                     ),
@@ -358,7 +351,7 @@ ui <- (dashboardPage(
                     
                     div(
                       id = "filter-id-toggle",
-                      switchInput(
+                      shinyWidgets::switchInput(
                         "filter_id",
                         label = NULL,
                         value = FALSE,
@@ -379,54 +372,10 @@ ui <- (dashboardPage(
                     
                     box(
                       width = "50%",
-                      leafletOutput("map") |>
-                        withSpinner(type = 8)
+                      leaflet::leafletOutput("map") |>
+                        shinycssloaders::withSpinner(type = 8)
                     ))
-              )),
-      
-      # REPORTING -------------------------------------
-      tabItem(
-        tabName = "reporting",
-        
-        div(
-          id = "reporting-total-box",
-          
-          box(
-            width = "100%",
-            
-            textOutput("reporting_totals_title"),
-            
-            downloadBttn(
-              "download_report_totals",
-              "Download",
-              size = "sm",
-              style = "simple"
-            ),
-            
-            dataTableOutput("reporting_totals_table") |>
-              withSpinner(type = 8)
-          )
-        ),
-        
-        div(
-          id = "reporting-sector-box",
-          box(
-            width = "100%",
-            
-            textOutput("reporting_by_sector_title"),
-            
-            downloadBttn(
-              "download_report_sector",
-              "Download",
-              size = "sm",
-              style = "simple"
-            ),
-            
-            dataTableOutput("reporting_by_sector_table") |>
-              withSpinner(type = 8)
-          )
-        )
-      )
+              ))
     )
   )
 ))

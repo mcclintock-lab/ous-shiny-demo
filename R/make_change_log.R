@@ -49,7 +49,7 @@ make_change_log <- function(df1, df2, current_log, user) {
 
 make_change_log_table <- function(change_log) {
   
-    table <- datatable(
+    table <- DT::datatable(
       change_log,
       colnames = c("datetime", "response_id", "edited_field", "original_value", "new_value", "user"),
       escape = FALSE,
