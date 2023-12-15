@@ -125,6 +125,8 @@ shinyServer(function(input, output, session) {
   
   ## targets ------------------------------------------------
   
+  source("R/make_target_table.R")
+  
   ### target table ----
   output$target_table <- DT::renderDataTable({
     make_target_table(responses = responses_reactive())
@@ -185,6 +187,7 @@ shinyServer(function(input, output, session) {
   
   
   ## demographic plot ----
+  source("R/make_plots.R")
   
   # initially define metric that can be changed with the box dropdown menu
   demo_plot_metric <- reactiveVal()
@@ -272,6 +275,9 @@ shinyServer(function(input, output, session) {
   output$save_edits_button <- renderText(save_edits_button())
   
   ## main table ----
+  source("R/make_datatable.R")
+  source("R/make_change_log.R")
+  
   output$datatable <-
     DT::renderDataTable(expr = make_datatable(responses = responses(),
                                           edit_data_status = edit_data_status()),
