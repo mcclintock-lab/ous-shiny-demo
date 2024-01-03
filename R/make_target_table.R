@@ -49,11 +49,17 @@ make_target_table <- function(responses) {
         ))
       )
     ) |>
-    # percent color ramp formatting
+    # percent progress bar
     DT::formatStyle(
       columns = "percent",
-      backgroundColor = DT::styleInterval(breaks, colors),
-      "border-radius" = "5px"
+      background = DT::styleColorBar(
+        targets_progress$percent,
+        "#BCFCC3",
+        angle = -90
+        ),
+      backgroundSize = '100% 15%',
+      backgroundRepeat = 'no-repeat',
+      backgroundPosition = 'bottom'
     ) |>
     # removes row striping
     DT::formatStyle(

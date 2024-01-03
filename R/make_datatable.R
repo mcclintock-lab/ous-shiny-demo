@@ -98,7 +98,7 @@ make_corrections_table <- function(corrections, edit_data_status) {
       DT::formatStyle(
         columns = 0:ncol(corrections),
         valueColumns = "fixed",
-        backgroundColor = styleEqual("✅", "#dbf5d7")
+        backgroundColor = DT::styleEqual("✅", "#dbf5d7")
       )
     
     return(table)
@@ -125,7 +125,7 @@ make_corrections_table <- function(corrections, edit_data_status) {
       DT::formatStyle(
         columns = 0:ncol(corrections),
         valueColumns = "fixed",
-        backgroundColor = styleEqual("✅", "#dbf5d7")
+        backgroundColor = DT::styleEqual("✅", "#dbf5d7")
       )
     
     return(table) 

@@ -280,7 +280,7 @@ shinyServer(function(input, output, session) {
   ### view in map ----
   observeEvent(input$dt_view_shapes, {
     if (is.null(input$datatable_rows_selected)) {
-      show_alert(title = "Please select a response in the table to view in map",
+      shinyWidgets::show_alert(title = "Please select a response in the table to view in map",
                  type = "warning")
       
     } else {
@@ -348,7 +348,7 @@ shinyServer(function(input, output, session) {
         
         if (is.na(changed_val)) {
           
-          show_alert(title = "This variable requires a value of 'true' or 'false'",
+          shinyWidgets::show_alert(title = "This variable requires a value of 'true' or 'false'",
                      type = "warning")
           
         } else {
@@ -364,7 +364,7 @@ shinyServer(function(input, output, session) {
           
           if (!changed_val %in% sectors) {
             
-            show_alert(title = "That sector is not recognized",
+            shinyWidgets::show_alert(title = "That sector is not recognized",
                        text = "Please check spelling, punctuation, and capitalization",
                        type = "warning")
           }
@@ -380,7 +380,7 @@ shinyServer(function(input, output, session) {
           
           if (!changed_val %in% responses_edited()$response_id) {
             
-            show_alert(title = "That response ID doesn't exist in the data",
+            shinyWidgets::show_alert(title = "That response ID doesn't exist in the data",
                        type = "warning")
           }
           
@@ -476,7 +476,7 @@ shinyServer(function(input, output, session) {
     if (is.na(input$corrections_response_id) | 
         input$corrections_text == "" |
         input$corrections_reason == "") {
-      show_alert(title = "Please enter a valid response ID, correction, and reason",
+      shinyWidgets::show_alert(title = "Please enter a valid response ID, correction, and reason",
                  type = "warning")
     } else {
       new_entry <- data.frame(
@@ -505,7 +505,7 @@ shinyServer(function(input, output, session) {
         updateTextAreaInput(inputId = "corrections_reason",
                             value = character(0))
       } else {
-        show_alert("The submitted response ID doesn't exist in the dataset",
+        shinyWidgets::show_alert("The submitted response ID doesn't exist in the dataset",
                    type = "warning")
       }
     }
