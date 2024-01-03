@@ -12,8 +12,8 @@ make_target_table <- function(responses) {
   targets_progress <- targets |>
     full_join(progress)
   
+  # used for sector plot in `R/make_plots.R`
   assign("sector_targets", targets, envir = .GlobalEnv)
-  
   
   targets_progress <- targets_progress |>
     mutate(
@@ -22,12 +22,8 @@ make_target_table <- function(responses) {
       percent = ifelse(percent > 1, 1, percent)
     )
   
+  # used for target editing in `server.R`
   assign("targets_progress", targets_progress, envir = .GlobalEnv)
-  
-  # red-ylw-grn color ramp styling for target progress
-  breaks <- seq(0, 1, 0.01)
-  colors <-
-    colorRampPalette(c("white", "#EAFCEC"))(length(breaks) + 1)
   
   target_table <-
     DT::datatable(
@@ -38,7 +34,7 @@ make_target_table <- function(responses) {
         "Participants",
         "Percent achieved"
       ),
-      editable = TRUE,
+      editable = list(target='cell', disable = list(columns = c(1,3,4))),
       selection = "none",
       options = list(
         lengthChange = FALSE,
@@ -53,10 +49,10 @@ make_target_table <- function(responses) {
     DT::formatStyle(
       columns = "percent",
       background = DT::styleColorBar(
-        targets_progress$percent,
+        c(targets_progress$percent, 1), # tack on a default 1 (i.e. max possible amount) because `styleColorBar` fills proportionally
         "#BCFCC3",
         angle = -90
-        ),
+      ),
       backgroundSize = '100% 15%',
       backgroundRepeat = 'no-repeat',
       backgroundPosition = 'bottom'
@@ -67,8 +63,8 @@ make_target_table <- function(responses) {
       "box-shadow" = "inset 0 0 0 9999px rgba(0, 0, 0, 0)"
     ) |> 
     DT::formatPercentage(columns = "percent",
-                     mark = ".",
-                     digits = 0)
+                         mark = ".",
+                         digits = 0)
   
   return(target_table)
 }

@@ -144,12 +144,13 @@ shinyServer(function(input, output, session) {
         changed_row <- input$target_table_cell_edit$row
         changed_val <- input$target_table_cell_edit$value
         changed_val <- ifelse(changed_val == "", NA, changed_val)
-        changed_target <- targets_progress[[changed_row, "metric"]] |>
-          snakecase::to_snake_case()
+        changed_target <- targets_progress[[changed_row, "sector"]]
+        
+        print(changed_target)
         
         changed_target_table <- target_table_reactive()
         
-        changed_target_table[changed_target_table$metric == changed_target, ]$target <-
+        changed_target_table[changed_target_table$sector == changed_target, ]$target <-
           changed_val
         
         target_table_reactive(changed_target_table)
@@ -161,7 +162,7 @@ shinyServer(function(input, output, session) {
       
       # save_targets listener - overwrite source targets
       observeEvent(input$save_targets, {
-        write_csv(changed_target_table, "data/demo_survey_targets.csv")
+        write_csv(changed_target_table, "data/survey_targets.csv")
         
         assign("targets",
                changed_target_table,
