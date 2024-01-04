@@ -52,128 +52,131 @@ ui <- (dashboardPage(
       tabItem(
         tabName = "overview",
         
-        ## value boxes ----
-        fluidRow(
-          width = "100%",
-          
-          # top row of boxes
-          div(
-            class = "col-sm-12 col-md-12 col-lg-12",
-            id = "top-row",
+        div(
+          id = "overview-tab",
+          ## value boxes ----
+          fluidRow(
+            width = "100%",
             
-            # latest data and island option stack
+            # top row of boxes
             div(
-              id = "data-island-stack",
-              class = "col-sm-6 col-md-6 col-lg-3",
+              class = "col-sm-12 col-md-12 col-lg-12",
+              id = "top-row",
               
-              # latest data text
+              # latest data and island option stack
               div(
-                id = "latest-data",
-                class = "col-sm-12 col-md-12 col-lg-12",
-                div(id = "latest-data-box",
-                    box(
-                      tags$a(
-                        href = seasketch_url,
-                        target = "_blank",
-                        img(src = "images/seasketch-logo.png",
-                            style = "height: 35px; margin-bottom: 17px; margin-top: 10px;"),
+                id = "data-island-stack",
+                class = "col-sm-6 col-md-6 col-lg-3",
+                
+                # latest data text
+                div(
+                  id = "latest-data",
+                  class = "col-sm-12 col-md-12 col-lg-12",
+                  div(id = "latest-data-box",
+                      box(
+                        tags$a(
+                          href = seasketch_url,
+                          target = "_blank",
+                          img(src = "images/seasketch-logo.png",
+                              style = "height: 35px; margin-bottom: 17px; margin-top: 10px;"),
+                          width = "100%"
+                        ),
+                        
+                        uiOutput("latest_data"),
                         width = "100%"
-                        # height = "62px"
-                      ),
-                      
-                      uiOutput("latest_data"),
-                      width = "100%"
-                    ))
+                      ))
+                ),
               ),
+              
+              # value box row
+              div(
+                id = "value-box-row",
+                class = "col-sm-12 col-md-12 col-lg-9",
+                
+                # value boxes with response and representation figures
+                div(class = "col-sm-4 col-md-4 col-lg-4",
+                    valueBoxOutput("individual_respondents", width = "33%")),
+                
+                div(class = "col-sm-4 col-md-4 col-lg-4",
+                    valueBoxOutput("individuals_represented", width = "33%")),
+                
+                div(class = "col-sm-4 col-md-4 col-lg-4",
+                    valueBoxOutput("sector_responses", width = "33%"))
+              )
             ),
             
-            # value box row
+            ## target table ----
             div(
-              id = "value-box-row",
-              class = "col-sm-12 col-md-12 col-lg-9",
+              id = "target-box",
+              class = "col-sm-12 col-md-12 col-lg-12",
               
-              # value boxes with response and representation figures
-              div(class = "col-sm-4 col-md-4 col-lg-4",
-                  valueBoxOutput("individual_respondents", width = "33%")),
-              
-              div(class = "col-sm-4 col-md-4 col-lg-4",
-                  valueBoxOutput("individuals_represented", width = "33%")),
-              
-              div(class = "col-sm-4 col-md-4 col-lg-4",
-                  valueBoxOutput("sector_responses", width = "33%"))
+              shinydashboardPlus::box(
+                title = "Targets",
+                width = 12,
+                align = "center",
+                collapsible = TRUE,
+                dropdownMenu = shinydashboardPlus::boxDropdown(
+                  shinydashboardPlus::boxDropdownItem("Save target changes", id = "save_targets")
+                ),
+                
+                DT::dataTableOutput("target_table") |>
+                  shinycssloaders::withSpinner(type = 8)
+              )
             )
           ),
           
-          ## target table ----
-          div(
-            id = "target-box",
-            class = "col-sm-12 col-md-12 col-lg-12",
-            
-            shinydashboardPlus::box(
-              title = "Targets",
-              width = 12,
-              align = "center",
-              collapsible = TRUE,
-              dropdownMenu = shinydashboardPlus::boxDropdown(
-                shinydashboardPlus::boxDropdownItem("Save target changes", id = "save_targets")
-              ),
-              
-              DT::dataTableOutput("target_table") |>
-                shinycssloaders::withSpinner(type = 8)
-            )
-          )
-        ),
-        
-        
-        
-        
-        ## plots ----
-        
-        div(id = "plots-row",
-            fluidRow(
-              # sector responses
-              div(
-                class = "col-sm-12 col-md-12 col-lg-6",
-                id = "resp-plot-box",
-                
-                shinydashboardPlus::box(
-                  title = "Responses by Sector",
-                  width = 12,
-                  collapsible = TRUE,
+          
+          
+          
+          ## plots ----
+          div(id = "plots-row",
+              class = "col-sm-12 col-md-12 col-lg-12",
+              fluidRow(
+                # sector responses
+                div(
+                  class = "col-sm-12 col-md-12 col-lg-6",
+                  id = "resp-plot-box",
                   
-                  dropdownMenu = shinydashboardPlus::boxDropdown(
-                    shinydashboardPlus::boxDropdownItem("Represented", id = "represented"),
-                    shinydashboardPlus::boxDropdownItem("Responses", id = "responses")
+                  shinydashboardPlus::box(
+                    title = "Responses by Sector",
+                    width = 12,
+                    collapsible = TRUE,
                     
-                  ),
-                  
-                  plotOutput("resp_plot") |>
-                    shinycssloaders::withSpinner(type = 8)
-                )
-              ),
-              
-              
-              # demographics
-              div(
-                class = "col-sm-12 col-md-12 col-lg-6",
-                id = "demo-plot-box",
-                
-                shinydashboardPlus::box(
-                  title = "Demographics",
-                  width = 12,
-                  collapsible = TRUE,
-                  
-                  dropdownMenu = shinydashboardPlus::boxDropdown(
-                    shinydashboardPlus::boxDropdownItem("Age", id = "age"),
-                    shinydashboardPlus::boxDropdownItem("Gender", id = "gender")
+                    dropdownMenu = shinydashboardPlus::boxDropdown(
+                      shinydashboardPlus::boxDropdownItem("Represented", id = "represented"),
+                      shinydashboardPlus::boxDropdownItem("Responses", id = "responses")
+                      
+                    ),
                     
-                  ),
+                    plotOutput("resp_plot") |>
+                      shinycssloaders::withSpinner(type = 8)
+                  )
+                ),
+                
+                
+                # demographics
+                div(
+                  class = "col-sm-12 col-md-12 col-lg-6",
+                  id = "demo-plot-box",
                   
-                  plotOutput("demo_plot") |>
-                    shinycssloaders::withSpinner(type = 8)
+                  shinydashboardPlus::box(
+                    title = "Demographics",
+                    width = 12,
+                    collapsible = TRUE,
+                    
+                    dropdownMenu = shinydashboardPlus::boxDropdown(
+                      shinydashboardPlus::boxDropdownItem("Age", id = "age"),
+                      shinydashboardPlus::boxDropdownItem("Gender", id = "gender")
+                      
+                    ),
+                    
+                    plotOutput("demo_plot") |>
+                      shinycssloaders::withSpinner(type = 8)
+                  )
                 )
               )
-            ))
+          )
+        )
       ),
       
       # DATA TABLE ----------------------------------------------------------

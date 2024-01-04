@@ -20,7 +20,6 @@ html, body {
   background-color: #0087B7;
 }
 
-
 /* box titles */
 .box-title {
   font-weight: bold; 
@@ -138,8 +137,17 @@ html, body {
  
  /* ---- overview page ---- */
  
+ /* center all elements on overview page*/
+#overview-tab {
+   align-items: center !important;
+   justify-content: center !important;
+   display: flex;
+   flex-direction: column;
+ }
+ 
  #top-row {
    padding: 0px;
+   margin: 0px;
  }
  
   #latest-data {
@@ -204,7 +212,7 @@ html, body {
    padding-right: 0;
    padding-left: 0;
  }
- 
+
 #resp-plot-box > div > div > div.box-body > div.direct-chat-contacts-open {
    max-width: 150px !important;
  }
@@ -242,6 +250,7 @@ html, body {
  }
  
  #dt-box {
+   width: 2000px;
    overflow-x: auto !important;
  }
  
