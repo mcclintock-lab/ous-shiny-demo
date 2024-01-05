@@ -90,16 +90,20 @@ shinyServer(function(input, output, session) {
   
   ## info boxes ----
   
-  # latest data update
-  output$latest_data <- renderUI({
-    HTML(paste0("Data updated", br(), "<b>", data_update(), "</b>"))
+  # datetime update box
+  output$data_update <- renderValueBox({
+    valueBox(
+      "Responses Updated:",
+      HTML(data_update() |> str_replace(" ", "</br>")),
+      icon = icon("database")
+    )
   })
   
   # number respondents box
   output$individual_respondents <- renderValueBox({
     valueBox(
       length(unique(responses_reactive()$response_id)),
-      HTML(paste0("Individual", br(), "Respondents")),
+      HTML(paste0("Individual", br(), "Responses")),
       icon = icon("user", class = "fa-solid fa-user")
     )
   })
@@ -108,7 +112,7 @@ shinyServer(function(input, output, session) {
   output$individuals_represented <- renderValueBox({
     valueBox(
       sum(respondent_info()$participants),
-      HTML(paste0("Individuals", br(), "Represented")),
+      HTML(paste0("Participants", br(), "Represented")),
       icon = icon("users")
     )
   })

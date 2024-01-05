@@ -55,72 +55,42 @@ ui <- (dashboardPage(
         div(
           id = "overview-tab",
           ## value boxes ----
-            width = "100%",
+          width = "100%",
+          
+          div(
+            id = "top-row",
+            # value box row
+            splitLayout(
+              cellArgs = list(style = "padding-right: 12px"),
+              # datetime data were last updated - value box acts as link to ss proj
+              tags$a(
+                href = "https://seasketch.org/belize/app",
+                target = "_blank",
+                valueBoxOutput("data_update", width = NULL)
+              ),
+              # value boxes with response and representation figures
+              valueBoxOutput("individual_respondents", width = NULL),
+              valueBoxOutput("individuals_represented", width = NULL),
+              valueBoxOutput("sector_responses", width = NULL)
+            )
+          ),
+          
+          ## target table ----
+          div(
+            id = "target-box",
             
-            # top row of boxes
-            div(
-              class = "col-sm-12 col-md-12 col-lg-12",
-              id = "top-row",
-              
-              # latest data and island option stack
-              div(
-                id = "data-island-stack",
-                class = "col-sm-6 col-md-6 col-lg-3",
-                
-                # latest data text
-                div(
-                  id = "latest-data",
-                  
-                  div(id = "latest-data-box",
-                      box(
-                        tags$a(
-                          href = seasketch_url,
-                          target = "_blank",
-                          img(src = "images/seasketch-logo.png",
-                              style = "height: 35px; margin-bottom: 17px; margin-top: 10px;"),
-                          width = "100%"
-                        ),
-                        
-                        uiOutput("latest_data"),
-                        width = "100%"
-                      ))
-                ),
+            shinydashboardPlus::box(
+              title = "Targets",
+              width = 12,
+              align = "center",
+              collapsible = TRUE,
+              dropdownMenu = shinydashboardPlus::boxDropdown(
+                shinydashboardPlus::boxDropdownItem("Save target changes", id = "save_targets")
               ),
               
-              # value box row
-              div(
-                id = "value-box-row",
-                class = "col-sm-12 col-md-12 col-lg-12",
-                
-                # value boxes with response and representation figures
-                div(class = "col-sm-4 col-md-4 col-lg-4",
-                    valueBoxOutput("individual_respondents", width = "33%")),
-                
-                div(class = "col-sm-4 col-md-4 col-lg-4",
-                    valueBoxOutput("individuals_represented", width = "33%")),
-                
-                div(class = "col-sm-4 col-md-4 col-lg-4",
-                    valueBoxOutput("sector_responses", width = "33%"))
-              )
+              DT::dataTableOutput("target_table") |>
+                shinycssloaders::withSpinner(type = 8)
             ),
-            
-            ## target table ----
-            div(
-              id = "target-box",
-              class = "col-sm-12 col-md-12 col-lg-12",
-              
-              shinydashboardPlus::box(
-                title = "Targets",
-                width = 12,
-                align = "center",
-                collapsible = TRUE,
-                dropdownMenu = shinydashboardPlus::boxDropdown(
-                  shinydashboardPlus::boxDropdownItem("Save target changes", id = "save_targets")
-                ),
-                
-                DT::dataTableOutput("target_table") |>
-                  shinycssloaders::withSpinner(type = 8)
-              )
           ),
           
           
