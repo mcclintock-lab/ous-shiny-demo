@@ -55,7 +55,6 @@ ui <- (dashboardPage(
         div(
           id = "overview-tab",
           ## value boxes ----
-          fluidRow(
             width = "100%",
             
             # top row of boxes
@@ -71,7 +70,7 @@ ui <- (dashboardPage(
                 # latest data text
                 div(
                   id = "latest-data",
-                  class = "col-sm-12 col-md-12 col-lg-12",
+                  
                   div(id = "latest-data-box",
                       box(
                         tags$a(
@@ -91,7 +90,7 @@ ui <- (dashboardPage(
               # value box row
               div(
                 id = "value-box-row",
-                class = "col-sm-12 col-md-12 col-lg-9",
+                class = "col-sm-12 col-md-12 col-lg-12",
                 
                 # value boxes with response and representation figures
                 div(class = "col-sm-4 col-md-4 col-lg-4",
@@ -122,7 +121,6 @@ ui <- (dashboardPage(
                 DT::dataTableOutput("target_table") |>
                   shinycssloaders::withSpinner(type = 8)
               )
-            )
           ),
           
           

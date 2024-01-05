@@ -146,8 +146,13 @@ html, body {
  }
  
  #top-row {
+   display:inline-block; 
    padding: 0px;
    margin: 0px;
+   align-items: center !important;
+   justify-content: center !important;
+   display: flex;
+   flex-direction: column;
  }
  
   #latest-data {
@@ -172,6 +177,7 @@ html, body {
  }
  
  #value-box-row {
+   display:inline-block !important; 
    padding:0px;
    max-width: 900px;
  }
@@ -186,7 +192,7 @@ html, body {
  }
  
  #target-box {
-   max-width: 1200px;
+   max-width: 1300px;
    padding-right: 0;
    padding-left: 0;
  }
@@ -196,21 +202,23 @@ html, body {
  }
  
  #demo-plot-box {
-   padding-right: 0;
+   padding-right: 20;
    padding-left: 0;
  }
  
  #demo_plot {
+  margin-right: 20;
   height: 480px !important;
  }
  
   #resp_plot {
+  margin-left: 20;
   height: 480px !important;
  }
  
  #resp-plot-box {
    padding-right: 0;
-   padding-left: 0;
+   padding-left: 20;
  }
 
 #resp-plot-box > div > div > div.box-body > div.direct-chat-contacts-open {
@@ -250,7 +258,6 @@ html, body {
  }
  
  #dt-box {
-   width: 2000px;
    overflow-x: auto !important;
  }
  
