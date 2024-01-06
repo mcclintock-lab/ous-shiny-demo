@@ -171,26 +171,31 @@ html, body {
  }
  
   #data_update > div > div {
-   padding-top: 2vh;
+   padding-top: 1.5vh;
    padding-left: 1vh;
  }
  
- /* "Data Updated:" */
+ /* "Responses Updated:" */
  #data_update > div > div > h3 {
-   font-size: 18px;
-   font-weight: normal;
+   font-size: 16px;
+   font-weight: 600;
+   line-height: 120%;
  }
  
  /* datetime */
  #data_update > div > div > p {
-   font-size: 20px;
-   font-weight: bold;
+   font-size: 22px;
+   font-weight: 900;
+   color: #009AD3;
  }
  
+ /* database icon */
  #data_update > div > div.icon-large {
    right: 2vh; 
    top: -1vh; 
    font-size: 38px;
+   color: #00A6E1;
+   opacity: 0.8;
  }
  
   #latest-data {

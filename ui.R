@@ -61,10 +61,10 @@ ui <- (dashboardPage(
             id = "top-row",
             # value box row
             splitLayout(
-              cellArgs = list(style = "padding-right: 12px"),
+              cellArgs = list(style = "padding-right: 12px;"),
               # datetime data were last updated - value box acts as link to ss proj
               tags$a(
-                href = "https://seasketch.org/belize/app",
+                href = "https://seasketch.org/peter/app",
                 target = "_blank",
                 valueBoxOutput("data_update", width = NULL)
               ),

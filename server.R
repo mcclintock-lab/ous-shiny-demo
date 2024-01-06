@@ -93,7 +93,7 @@ shinyServer(function(input, output, session) {
   # datetime update box
   output$data_update <- renderValueBox({
     valueBox(
-      "Responses Updated:",
+      HTML("Responses</br>Updated:"),
       HTML(data_update() |> str_replace(" ", "</br>")),
       icon = icon("database")
     )
