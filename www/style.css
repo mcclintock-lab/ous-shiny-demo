@@ -16,10 +16,13 @@ html, body {
 }
 
 .skin-blue .main-header .logo {
-  
   background-color: #0087B7;
 }
 
+.shiny-split-layout {
+  max-width: 1200px;
+  margin-right: 3px !important;
+}
 
 /* box titles */
 .box-title {
@@ -138,8 +141,56 @@ html, body {
  
  /* ---- overview page ---- */
  
+ /* center all elements on overview page*/
+#overview-tab {
+   align-items: center !important;
+   justify-content: center !important;
+   display: flex;
+   flex-direction: column;
+ }
+ 
  #top-row {
+   display:inline-block; 
    padding: 0px;
+   margin: 0px;
+   align-items: center !important;
+   justify-content: center !important;
+   display: flex;
+   flex-direction: column;
+   width: 95%;
+ }
+ 
+ #data_update > div:hover {
+  background-color: #DEE5FD !important;
+}
+ 
+ #data_update > div {
+   color: #2E4052 !important;
+   background-color: white !important;
+   margin-left: 1.5px !important;
+ }
+ 
+  #data_update > div > div {
+   padding-top: 2vh;
+   padding-left: 1vh;
+ }
+ 
+ /* "Data Updated:" */
+ #data_update > div > div > h3 {
+   font-size: 18px;
+   font-weight: normal;
+ }
+ 
+ /* datetime */
+ #data_update > div > div > p {
+   font-size: 20px;
+   font-weight: bold;
+ }
+ 
+ #data_update > div > div.icon-large {
+   right: 2vh; 
+   top: -1vh; 
+   font-size: 38px;
  }
  
   #latest-data {
@@ -147,25 +198,6 @@ html, body {
    height: 79px;
    text-align: center;
    font-size: 18px !important;
- }
- 
- #latest-data-box {
-   margin-bottom: 10px;
- }
- 
-  #island-selector {
-   height: 74px;
- }
- 
- #data-island-stack {
-   padding: 0px; 
-   max-width: 300px;
-   height: 153px;
- }
- 
- #value-box-row {
-   padding:0px;
-   max-width: 900px;
  }
  
  #sec-resp-metric-select {
@@ -178,13 +210,14 @@ html, body {
  }
  
  #target-box {
-   max-width: 1200px;
+   width: 98%;
+   max-width: 1230px;
    padding-right: 0;
    padding-left: 0;
  }
  
  #plots-row {
-   max-width: 1172px !important;
+   max-width: 1230px !important;
  }
  
  #demo-plot-box {
@@ -193,10 +226,7 @@ html, body {
  }
  
  #demo_plot {
-  height: 480px !important;
- }
- 
-  #resp_plot {
+  margin-right: 20;
   height: 480px !important;
  }
  
@@ -205,6 +235,11 @@ html, body {
    padding-left: 0;
  }
  
+ #resp_plot {
+  margin-left: 20;
+  height: 480px !important;
+ }
+
 #resp-plot-box > div > div > div.box-body > div.direct-chat-contacts-open {
    max-width: 150px !important;
  }
