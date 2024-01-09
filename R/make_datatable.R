@@ -3,8 +3,9 @@
 
 # table for DT data explorer
 make_datatable <- function(responses, edit_data_status) {
-  # create df with desired columns
-  response_table <- responses 
+  # create df with desired column types (for better filtering)
+  response_table <- responses |> 
+    mutate(response_id = as.character(response_id))
   
   
   if (edit_data_status == FALSE) {
