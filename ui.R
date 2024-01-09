@@ -67,11 +67,21 @@ ui <- (dashboardPage(
                 href = "https://seasketch.org/peter/app",
                 target = "_blank",
                 valueBoxOutput("data_update", width = NULL)
-              ),
+              ) |> 
+                # tooltip info when hovering over value boxes
+                shinyBS::tipify("Click to go to the SeaSketch project page.",
+                                # quote syntax overcomes tipify's flawed option parsing: https://shorturl.at/orA16
+                                options = list("delay': {show: 1000, hide: 50}, 'container" = "body")),
               # value boxes with response and representation figures
-              valueBoxOutput("individual_respondents", width = NULL),
-              valueBoxOutput("individuals_represented", width = NULL),
-              valueBoxOutput("sector_responses", width = NULL)
+              valueBoxOutput("individual_respondents", width = NULL) |> 
+                shinyBS::tipify(title = "The number of survey submissions.",
+                                options = list("delay': {show: 1000, hide: 50}, 'container" = "body")),
+              valueBoxOutput("individuals_represented", width = NULL) |> 
+                shinyBS::tipify(title = "The total number of participants represented by individual and group responses.",
+                                options = list("delay': {show: 1000, hide: 50}, 'container" = "body")),
+              valueBoxOutput("sector_responses", width = NULL) |> 
+                shinyBS::tipify(title = "The sum of the number of sectors represented in each response.",
+                                options = list("delay': {show: 1000, hide: 50}, 'container" = "body")),
             )
           ),
           
