@@ -383,6 +383,22 @@ html, body {
    display: inline;
  }
  
+  #shapes-number {
+   font-size: 20px;
+   font-weight: bold;
+   display: inline;
+ }
+ 
+ #shapes-number-box {
+   opacity: 0.7;
+ }
+ 
+ #map_fullscreen_button {
+   color: black;
+   border-color: black;
+   background-color: #FFFFFF95 !important;
+ }
+ 
 /* ---- reporting page ---- */
 
  #reporting-total-box {

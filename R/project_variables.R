@@ -14,7 +14,7 @@ sectors <- c(
   "Research",
   "Energy development",
   "Touristic fishing",
-  "Aquaculture,Aquaculture",
+  "Aquaculture",
   "Recreation, sports, and tourism"
 )
 

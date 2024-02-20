@@ -6,7 +6,11 @@ library(tidyverse)
 library(sf)
 library(here)
 library(lubridate)
+library(mapdeck)
 devtools::load_all("packages/shinymanager")
+devtools::load_all("packages/shinyBS")
+# read in mapbox public key
+mb_pk <- read_rds("auth/mb_pk.RDS")
 
 # load status of password protection
 source("R/secure_option.R")

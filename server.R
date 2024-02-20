@@ -150,8 +150,6 @@ shinyServer(function(input, output, session) {
         changed_val <- ifelse(changed_val == "", NA, changed_val)
         changed_target <- targets_progress[[changed_row, "sector"]]
         
-        print(changed_target)
-        
         changed_target_table <- target_table_reactive()
         
         changed_target_table[changed_target_table$sector == changed_target, ]$target <-
@@ -279,14 +277,14 @@ shinyServer(function(input, output, session) {
   ## main table ----
   output$datatable <-
     DT::renderDataTable(expr = make_datatable(responses = responses(),
-                                          edit_data_status = edit_data_status()),
-                    server = FALSE)
+                                              edit_data_status = edit_data_status()),
+                        server = FALSE)
   
   ### view in map ----
   observeEvent(input$dt_view_shapes, {
     if (is.null(input$datatable_rows_selected)) {
       shinyWidgets::show_alert(title = "Please select a response in the table to view in map",
-                 type = "warning")
+                               type = "warning")
       
     } else {
       updateTabItems(inputId = "tabs", selected = "shapes")
@@ -354,7 +352,7 @@ shinyServer(function(input, output, session) {
         if (is.na(changed_val)) {
           
           shinyWidgets::show_alert(title = "This variable requires a value of 'true' or 'false'",
-                     type = "warning")
+                                   type = "warning")
           
         } else {
           
@@ -370,8 +368,8 @@ shinyServer(function(input, output, session) {
           if (!changed_val %in% sectors) {
             
             shinyWidgets::show_alert(title = "That sector is not recognized",
-                       text = "Please check spelling, punctuation, and capitalization",
-                       type = "warning")
+                                     text = "Please check spelling, punctuation, and capitalization",
+                                     type = "warning")
           }
           
           changed_shapes <- shapes_edited()
@@ -386,7 +384,7 @@ shinyServer(function(input, output, session) {
           if (!changed_val %in% responses_edited()$response_id) {
             
             shinyWidgets::show_alert(title = "That response ID doesn't exist in the data",
-                       type = "warning")
+                                     type = "warning")
           }
           
           changed_shapes <- shapes_edited()
@@ -482,7 +480,7 @@ shinyServer(function(input, output, session) {
         input$corrections_text == "" |
         input$corrections_reason == "") {
       shinyWidgets::show_alert(title = "Please enter a valid response ID, correction, and reason",
-                 type = "warning")
+                               type = "warning")
     } else {
       new_entry <- data.frame(
         response_id = input$corrections_response_id,
@@ -511,7 +509,7 @@ shinyServer(function(input, output, session) {
                             value = character(0))
       } else {
         shinyWidgets::show_alert("The submitted response ID doesn't exist in the dataset",
-                   type = "warning")
+                                 type = "warning")
       }
     }
     
@@ -582,85 +580,75 @@ shinyServer(function(input, output, session) {
   
   # SHAPE VIEWER -------------------------------------------------
   
-  output$map <- leaflet::renderLeaflet({
-    library(sf)
-    
+  ## render map ----
+  output$map <- renderMapdeck({
     shapes <- shapes_reactive()
-    
-    if (input$filter_id == TRUE) {
-      # parse user input for filter by response_id
-      shape_id <-
-        as.numeric(strsplit(input$shape_id, split = ", |,")[[1]])
-      
-      shapes <- shapes |>
-        filter(response_id %in% shape_id)
-      
-    } else {
-      
-      if (input$map_facil_var == "both") {
-        map_facil <- c(TRUE, FALSE)
-        
-      } else {
-        map_facil <- input$map_facil_var
-      }
-      
-      regions_represented_split <- map(shapes$regions_represented, function(x) str_split_1(x, ","))
-      region_detected <- sapply(regions_represented_split, function(x) length(intersect(x, input$map_regions)) > 0)
-      
-      shapes <- shapes[region_detected, ]
-      
-      shapes <- shapes |>
-        filter(
-          sector %in% input$map_sector,
-          is_facilitated %in% map_facil
-        )
-    }
     
     # save filtered shapes as reactive expression to global env for shape export
     assign("filtered_shapes", reactive(shapes), env = .GlobalEnv)
     
-    # number of shapes displayed - added to map with `addControl()`
-    shapes_displayed <- HTML({
-      paste0("Shapes displayed: ",
-             div(id = "shapes-number", nrow(shapes)))
-    })
+    # number of shapes displayed - overlaid on map
+    n_shapes_displayed <- nrow(shapes)
+    output$shapes_displayed <- renderUI(
+      HTML({
+        paste0(div(id = "shapes-number", n_shapes_displayed), ifelse(n_shapes_displayed != 1, " shapes", " shape"))
+      })
+    )
     
-    fill_opacity <- 0.5 / log(nrow(shapes))
-    fill_opacity <- ifelse(fill_opacity > 0.3, 0.3, fill_opacity)
+    fill_opacity <- round((1.2 / log(nrow(shapes))) * 100, digits = 0)
+    fill_opacity <- case_when(
+      fill_opacity > 50 | fill_opacity == 0 ~ "50",
+      fill_opacity < 10 ~ paste0("0", fill_opacity),
+      TRUE ~ as.character(fill_opacity)
+    )
     
-    # render map
-    leaflet::leaflet(shapes) |>
-      leaflet::addProviderTiles("Esri.WorldStreetMap") |>
-      # addTiles("https://tiles.stadiamaps.com/tiles/outdoors/{z}/{x}/{y}{r}.png",
-      # options = providerTileOptions(apikey = "")) |>
-      leaflet::addPolygons(
-        stroke = TRUE,
-        weight = 0.02,
-        color = "black",
-        fillOpacity = fill_opacity,
-        fillColor = "red",
-        highlight = leaflet::highlightOptions(
-          color = 'yellow',
-          weight = 5,
-          bringToFront = FALSE,
-          sendToBack = TRUE,
-          stroke = 2,
-          opacity = 1
-        ),
-        popup = paste0(
-          "<b>",
-          shapes$sector,
-          "</b>",
-          "<br><b>Response ID:</b> ",
-          shapes$response_id,
-          "<br><b>Name:</b> ",
-          shapes$name,
-          "<br><b>Facilitator:</b> ",
-          shapes$facilitator_name
-        )
-      ) |>
-      leaflet::addPolylines(color = "black", weight = 0.5) |>
-      leaflet::addControl(shapes_displayed, position = "topright")
+    # format map popup based on whether it's a fishing sector or not
+    shapes$map_popup <- paste0(
+      "<b>",
+      shapes$sector,
+      "</b>",
+      "<br><b>Response ID:</b> ",
+      shapes$response_id,
+      "<br><b>Name:</b> ",
+      shapes$name,
+      "<br><b>Facilitator:</b> ",
+      shapes$facilitator_name
+    )
+    
+    # derive location and zoom level for map view from current shapes
+    bbox <- st_bbox(shapes)
+    bbox_centroid = c(mean(c(bbox[[1]], bbox[[3]])), mean(c(bbox[[2]], bbox[[4]])))
+    assign("starting_bbox_centroid", bbox_centroid, envir = .GlobalEnv)
+    bbox_area = (bbox[[3]] - bbox[[1]]) * (bbox[[4]] - bbox[[2]]) 
+    zoom_level = case_when(
+      bbox_area >= 50 ~ 5,
+      bbox_area < 50 & bbox_area >= 10 ~ 6,
+      bbox_area < 10 & bbox_area >= 1 ~ 7,
+      bbox_area < 1 & bbox_area >= 0.2 ~ 8,
+      bbox_area < 0.2 & bbox_area >= 1e-2 ~ 10,
+      bbox_area < 1e-2 & bbox_area >= 1e-4 ~ 11,
+      bbox_area < 1e-4 ~ 12
+    )
+    
+    ### define map ----
+    map <- mapdeck(
+      token = mb_pk, 
+      # style = mapdeck_style("streets"),
+      style = NULL, # for dev
+      location = bbox_centroid,
+      zoom = zoom_level
+    ) |> 
+      add_polygon(
+        shapes,
+        fill_colour = paste0("#FF0000", fill_opacity),
+        stroke_width = 50,
+        stroke_opacity = 0.5,
+        tooltip = "map_popup",
+        auto_highlight = TRUE,
+        update_view = FALSE
+      )
+    
+    return(map)
   })
   
   
@@ -672,26 +660,26 @@ shinyServer(function(input, output, session) {
   # clear filter button
   observeEvent(input$clear_shape_filters, {
     shinyWidgets::updatePickerInput(session = getDefaultReactiveDomain(),
-                      inputId = "map_regions",
-                      selected = character(0))
+                                    inputId = "map_regions",
+                                    selected = character(0))
     
     shinyWidgets::updateMaterialSwitch(session = getDefaultReactiveDomain(),
-                         inputId = "map_regions_all",
-                         value = FALSE)
+                                       inputId = "map_regions_all",
+                                       value = FALSE)
     
     shinyWidgets::updatePickerInput(session = getDefaultReactiveDomain(),
-                      inputId = "map_sector",
-                      selected = character(0))
+                                    inputId = "map_sector",
+                                    selected = character(0))
     
     shinyWidgets::updateMaterialSwitch(session = getDefaultReactiveDomain(),
-                         inputId = "map_sector_all",
-                         value = FALSE)
+                                       inputId = "map_sector_all",
+                                       value = FALSE)
     
-    shinyWidgets::updateSelectInput(inputId = "map_facil_var", selected = "both")
+    shiny::updateSelectInput(inputId = "map_facil_var", selected = "both")
     
     shinyWidgets::updateSwitchInput(inputId = "filter_id", value = FALSE)
     
-    shinyWidgets::updateTextInput(inputId = "shape_id", value = character(0))
+    shiny::updateTextInput(inputId = "shape_id", value = character(0))
     
   })
   
@@ -704,6 +692,149 @@ shinyServer(function(input, output, session) {
       write_sf(filtered_shapes(), file)
     }
   )
+  
+  ## fullscreen ----
+  observeEvent("map_fullscreen_button", ignoreInit = TRUE, {
+    
+    shapes <- filtered_shapes()
+    
+    # derive location and zoom level for map view from current shapes
+    bbox <- st_bbox(shapes)
+    bbox_centroid = c(mean(c(bbox[[1]], bbox[[3]])), mean(c(bbox[[2]], bbox[[4]])))
+    assign("starting_bbox_centroid", bbox_centroid, envir = .GlobalEnv)
+    bbox_area = (bbox[[3]] - bbox[[1]]) * (bbox[[4]] - bbox[[2]]) 
+    zoom_level = case_when(
+      bbox_area >= 1 ~ 7,
+      bbox_area < 1 & bbox_area >= 0.2 ~ 8,
+      bbox_area < 0.2 & bbox_area >= 1e-2 ~ 10,
+      bbox_area < 1e-2 & bbox_area >= 1e-4 ~ 11,
+      bbox_area < 1e-4 ~ 12
+    )
+    
+    mapdeck_update(map_id = "map") |> 
+      mapdeck_view(
+        location = bbox_centroid,
+        zoom = zoom_level,
+        duration = 400,
+        transition = "fly"
+      )
+  })
+  
+  ## map filters ----
+  observeEvent(
+    c(
+      input$filter_id,
+      input$shape_id,
+      input$map_regions,
+      input$map_sector,
+      input$map_facil_var
+    ), 
+    ignoreInit = TRUE,
+    
+    {
+      shapes <- shapes_reactive()
+      
+      if (input$filter_id == TRUE) {
+        # parse user input for filter by response_id
+        shape_id <-
+          as.numeric(strsplit(input$shape_id, split = ", |,")[[1]])
+        
+        shapes <- shapes |>
+          filter(response_id %in% shape_id)
+        
+      } else {
+        
+        region_detected <- 
+          if (is.null(input$map_regions)) {
+            sapply(shapes$regions_represented, function(x) FALSE) |> as.logical()
+          } else {
+            sapply(shapes$regions_represented, function(x) any(str_detect(x, input$map_regions))) |> as.logical()
+          }
+        
+        shapes <- shapes[region_detected, ]
+        
+        if (input$map_facil_var == "both") {
+          map_facil <- c(TRUE, FALSE)
+          
+        } else {
+          map_facil <- input$map_facil_var
+        }
+        
+        shapes <- shapes |>
+          filter(sector %in% input$map_sector &
+                   is_facilitated %in% map_facil)
+      }
+      
+      # save shapes to state for download
+      assign("filtered_shapes", reactive(shapes), env = .GlobalEnv)
+      
+      # number of shapes displayed - overlaid on map
+      n_shapes_displayed <- nrow(shapes)
+      output$shapes_displayed <- renderUI(
+        HTML({
+          paste0(div(id = "shapes-number", n_shapes_displayed), ifelse(n_shapes_displayed != 1, " shapes", " shape"))
+        })
+      )
+      
+      # format map popup based on whether it's a fishing sector or not
+      shapes$map_popup <- paste0(
+        "<b>",
+        shapes$sector,
+        "</b>",
+        "<br><b>Response ID:</b> ",
+        shapes$response_id,
+        "<br><b>Name:</b> ",
+        shapes$name,
+        "<br><b>Facilitator:</b> ",
+        shapes$facilitator_name
+      )
+      
+      fill_opacity <- round((1.2 / log(nrow(shapes) + 1)) * 100, digits = 0)
+      fill_opacity <- case_when(
+        fill_opacity > 50 | fill_opacity == 0 ~ "50",
+        fill_opacity < 10 ~ paste0("0", fill_opacity),
+        TRUE ~ as.character(fill_opacity)
+      )
+      
+      # derive location and zoom level for map view from current shapes
+      bbox <- st_bbox(shapes)
+      # if bbox is NA, revert to initial view
+      bbox_centroid <- if (!is.na(st_bbox(shapes)[[1]])) {
+        c(mean(c(bbox[[1]], bbox[[3]])), mean(c(bbox[[2]], bbox[[4]]))) 
+      } else {
+        starting_bbox_centroid
+      }
+      
+      bbox_area = (bbox[[3]] - bbox[[1]]) * (bbox[[4]] - bbox[[2]]) 
+      zoom_level = case_when(
+        bbox_area >= 50 ~ 5,
+        bbox_area < 50 & bbox_area >= 10 ~ 6,
+        bbox_area < 10 & bbox_area >= 1 ~ 7,
+        bbox_area < 1 & bbox_area >= 0.1 ~ 8,
+        bbox_area < 0.1 & bbox_area >= 1e-2 ~ 10,
+        bbox_area < 1e-2 & bbox_area >= 1e-4 ~ 11,
+        bbox_area < 1e-4 ~ 12,
+        TRUE ~ 5
+      )
+      
+      ## map update ----
+      mapdeck_update(map_id = "map") |> 
+        add_polygon(
+          shapes,
+          fill_colour = paste0("#FF0000", fill_opacity),
+          tooltip = "map_popup",
+          auto_highlight = TRUE,
+          update_view = FALSE,
+          stroke_width = 50,
+          stroke_opacity = 0.5
+        ) |> 
+        mapdeck_view(
+          location = bbox_centroid,
+          zoom = zoom_level,
+          duration = 400,
+          transition = "fly"
+        )
+    })
   
   
   # REPORTING -----------------------------
