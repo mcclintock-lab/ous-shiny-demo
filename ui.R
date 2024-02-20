@@ -43,7 +43,8 @@ ui <- (dashboardPage(
     
     # STYLING ----
     tags$head(
-      tags$link(rel = "stylesheet", type = "text/css", href = "style.css")
+      tags$link(rel = "stylesheet", type = "text/css", href = "style.css"),
+      tags$script(src = "fullscreen.js")
     ),
     
     # main menu items
@@ -353,8 +354,33 @@ ui <- (dashboardPage(
                     
                     box(
                       width = "50%",
-                      leaflet::leafletOutput("map") |>
-                        shinycssloaders::withSpinner(type = 8)
+                      mapdeckOutput("map", width = "100%", height = "80vh"),
+                      
+                      absolutePanel(
+                        div(
+                          id = "shapes-number-box",
+                          box(
+                            width = "100%",
+                            htmlOutput("shapes_displayed")
+                          )
+                        ),
+                        top = "20px",
+                        right = "20px"
+                      ),
+                      
+                      ## overlays ----
+                      absolutePanel(
+                        div(
+                          id = "map-fullscreen",
+                          shinyWidgets::actionBttn(
+                            "map_fullscreen_button",
+                            icon = icon("expand"),
+                            style = "simple"
+                          )
+                        ),
+                        top = "20px",
+                        left = "20px"
+                      )
                     ))
               ))
     )
