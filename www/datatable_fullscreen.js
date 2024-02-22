@@ -14,6 +14,6 @@ $(function () {
   // make datatable go fullscreen when button is clicked
   fullscreenButton.on('click', function () {
     datatable[0].requestFullscreen();
-    datatable.css({backgroundColor: "white", padding: "20px"});
+    //datatable.css({backgroundColor: "white", padding: "20px"});
   });
 });

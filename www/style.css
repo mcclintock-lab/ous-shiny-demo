@@ -293,6 +293,11 @@ html, body {
    margin-bottom: 5px !important;
  }
  
+ #datatable:fullscreen {
+   padding: 20px;
+   background-color: white;
+ }
+ 
  #corrections_table {
    overflow-y: auto !important;
  }
