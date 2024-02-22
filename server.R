@@ -633,8 +633,8 @@ shinyServer(function(input, output, session) {
     ### define map ----
     map <- mapdeck(
       token = mb_pk, 
-      # style = mapdeck_style("streets"),
-      style = NULL, # for dev
+      style = mapdeck_style("streets"),
+      # style = NULL, # for dev
       location = bbox_centroid,
       zoom = zoom_level
     ) |> 
