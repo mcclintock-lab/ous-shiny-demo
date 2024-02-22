@@ -44,7 +44,8 @@ ui <- (dashboardPage(
     # STYLING ----
     tags$head(
       tags$link(rel = "stylesheet", type = "text/css", href = "style.css"),
-      tags$script(src = "fullscreen.js")
+      tags$script(src = "map_fullscreen.js"),
+      tags$script(src = "datatable_fullscreen.js")
     ),
     
     # main menu items
@@ -168,6 +169,8 @@ ui <- (dashboardPage(
                     width = 12,
                     headerBorder = FALSE,
                     dropdownMenu = shinydashboardPlus::boxDropdown(
+                      shinydashboardPlus::boxDropdownItem("⛶ Fullscreen",
+                                                          id = "datatable_fullscreen"),
                       shinydashboardPlus::boxDropdownItem(htmlOutput("edit_data_button"),
                                                           id = "edit_datatable"),
                       shinydashboardPlus::boxDropdownItem(htmlOutput("save_edits_button"),

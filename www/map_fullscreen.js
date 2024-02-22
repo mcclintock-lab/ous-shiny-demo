@@ -1,3 +1,4 @@
+// make map fullscreen
 $(function () {
   'use strict';
 
