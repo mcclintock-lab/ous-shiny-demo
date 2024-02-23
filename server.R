@@ -274,11 +274,41 @@ shinyServer(function(input, output, session) {
   output$edit_data_button <- renderText(edit_data_button())
   output$save_edits_button <- renderText(save_edits_button())
   
+  # create responses value for updating datatable when columns are selected
+  responses_datatable <- reactiveVal()
+  
+  observe({
+    responses_datatable(responses())
+  })
+  
   ## main table ----
   output$datatable <-
-    DT::renderDataTable(expr = make_datatable(responses = responses(),
+    DT::renderDataTable(expr = make_datatable(responses = responses_datatable(),
                                               edit_data_status = edit_data_status()),
                         server = FALSE)
+  
+  ### select columns ----
+  observeEvent(input$datatable_column_select, {
+    
+    responses_datatable(responses())
+    
+    col_names <- names(responses())
+    
+    selected_columns <- 
+      if (is.null(input$datatable_column_select)) {
+      col_names
+    } else {
+      input$datatable_column_select 
+    }
+    
+    responses_datatable_selected <- responses_datatable() |> 
+      select(all_of(selected_columns))
+    
+    responses_datatable(responses_datatable_selected)
+    
+  },
+  ignoreNULL = FALSE
+  )
   
   ### view in map ----
   observeEvent(input$dt_view_shapes, {

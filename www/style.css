@@ -281,8 +281,8 @@ html, body {
    padding-right: 8px;
  }
  
- #dt-box {
-   overflow-x: auto !important;
+ label[for=datatable_column_select] {
+   padding-left: 15px;
  }
  
  #dt-box > div > div > div.box-body {
