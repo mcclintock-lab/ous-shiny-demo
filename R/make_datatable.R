@@ -5,8 +5,14 @@
 make_datatable <- function(responses, edit_data_status) {
   # create df with desired column types (for better filtering)
   response_table <- responses |> 
-    mutate(response_id = as.character(response_id))
+    mutate(
+      across(
+        everything(),
+        ~ as.character(.x)
+      )
+    )
   
+  n_cols <- ncol(responses) 
   
   if (edit_data_status == FALSE) {
 
@@ -18,9 +24,10 @@ make_datatable <- function(responses, edit_data_status) {
       options = list(
         pageLength = 50,
         scrollX = TRUE,
-        lengthChange = FALSE
+        lengthChange = FALSE,
+        autoWidth = FALSE
       )
-    ) 
+    )
     
   } else {
     
@@ -34,7 +41,8 @@ make_datatable <- function(responses, edit_data_status) {
         pageLength = 50,
         scrollX = TRUE,
         scroller = TRUE,
-        lengthChange = FALSE
+        lengthChange = FALSE,
+        autoWidth = FALSE
       )
     ) 
   }

@@ -41,7 +41,7 @@ ui <- (dashboardPage(
     # refresh button function
     shinyjs::extendShinyjs(text = "shinyjs.refresh_page = function() { location.reload(); }", functions = "refresh_page"),
     
-    # STYLING ----
+    # TAGS ----
     tags$head(
       tags$link(rel = "stylesheet", type = "text/css", href = "style.css"),
       tags$script(src = "map_fullscreen.js"),
@@ -193,6 +193,20 @@ ui <- (dashboardPage(
                           "download_responses",
                           "Download",
                           style = "simple",
+                        ),
+                        # column selector
+                        shinyWidgets::pickerInput(
+                          "datatable_column_select",
+                          choices = names(responses),
+                          selected = names(responses),
+                          multiple = TRUE,
+                          width = "250px",
+                          inline = TRUE,
+                          options = shinyWidgets::pickerOptions(
+                            actionsBox = TRUE,
+                            title = "Filter columns",
+                            selectedTextFormat = "static"
+                          )
                         ),
                         width = "100%",
                         DT::dataTableOutput("datatable")
