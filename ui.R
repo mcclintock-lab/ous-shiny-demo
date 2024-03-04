@@ -66,7 +66,7 @@ ui <- (dashboardPage(
               cellArgs = list(style = "padding-right: 12px;"),
               # datetime data were last updated - value box acts as link to ss proj
               tags$a(
-                href = "https://seasketch.org/peter/app",
+                href = seasketch_url,
                 target = "_blank",
                 valueBoxOutput("data_update", width = NULL)
               ) |> 

@@ -4,7 +4,7 @@ project <- "demo"
 
 app_title <- "OUS Shiny Demo"
 
-seasketch_url <- "https://seasketch.org"
+seasketch_url <- "https://seasketch.org/peter"
 
 sectors <- c(
   "Commercial fishing",
