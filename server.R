@@ -610,30 +610,25 @@ shinyServer(function(input, output, session) {
   
   # SHAPE VIEWER -------------------------------------------------
   
-  ## render map ----
-  output$map <- renderMapdeck({
+  output$map <- renderLeaflet({
+    library(sf)
+    
     shapes <- shapes_reactive()
     
     # save filtered shapes as reactive expression to global env for shape export
     assign("filtered_shapes", reactive(shapes), env = .GlobalEnv)
     
-    # number of shapes displayed - overlaid on map
-    n_shapes_displayed <- nrow(shapes)
-    output$shapes_displayed <- renderUI(
-      HTML({
-        paste0(div(id = "shapes-number", n_shapes_displayed), ifelse(n_shapes_displayed != 1, " shapes", " shape"))
-      })
-    )
+    # number of shapes displayed - added to map with `addControl()`
+    shapes_displayed <- HTML({
+      paste0("Shapes displayed: ",
+             div(id = "shapes-number", nrow(shapes)))
+    })
     
-    fill_opacity <- round((1.2 / log(nrow(shapes))) * 100, digits = 0)
-    fill_opacity <- case_when(
-      fill_opacity > 50 | fill_opacity == 0 ~ "50",
-      fill_opacity < 10 ~ paste0("0", fill_opacity),
-      TRUE ~ as.character(fill_opacity)
-    )
+    fill_opacity <- 0.5 / log(nrow(shapes))
+    fill_opacity <- ifelse(fill_opacity > 0.3, 0.3, fill_opacity)
     
-    # format map popup based on whether it's a fishing sector or not
-    shapes$map_popup <- paste0(
+    ## map popup ----
+    map_popup <- paste0(
       "<b>",
       shapes$sector,
       "</b>",
@@ -645,42 +640,53 @@ shinyServer(function(input, output, session) {
       shapes$facilitator_name
     )
     
-    # derive location and zoom level for map view from current shapes
-    bbox <- st_bbox(shapes)
-    bbox_centroid = c(mean(c(bbox[[1]], bbox[[3]])), mean(c(bbox[[2]], bbox[[4]])))
-    assign("starting_bbox_centroid", bbox_centroid, envir = .GlobalEnv)
-    bbox_area = (bbox[[3]] - bbox[[1]]) * (bbox[[4]] - bbox[[2]]) 
-    zoom_level = case_when(
-      bbox_area >= 50 ~ 5,
-      bbox_area < 50 & bbox_area >= 10 ~ 6,
-      bbox_area < 10 & bbox_area >= 1 ~ 7,
-      bbox_area < 1 & bbox_area >= 0.2 ~ 8,
-      bbox_area < 0.2 & bbox_area >= 1e-2 ~ 10,
-      bbox_area < 1e-2 & bbox_area >= 1e-4 ~ 11,
-      bbox_area < 1e-4 ~ 12
-    )
+    eez <- read_sf("data/eez.fgb")
     
-    ### define map ----
-    map <- mapdeck(
-      token = mb_pk, 
-      style = mapdeck_style("streets"),
-      # style = NULL, # for dev
-      location = bbox_centroid,
-      zoom = zoom_level
-    ) |> 
-      add_polygon(
-        shapes,
-        fill_colour = paste0("#FF0000", fill_opacity),
-        stroke_width = 50,
-        stroke_opacity = 0.5,
-        tooltip = "map_popup",
-        auto_highlight = TRUE,
-        update_view = FALSE
-      )
+    # get bbox for fitBounds()
+    bbox <- st_bbox(shapes)
+    
+    ## render map ----
+    map <- leaflet(shapes) |>
+      # addProviderTiles("Esri.WorldStreetMap") |>
+      addTiles(
+        paste0("https://api.mapbox.com/styles/v1/mapbox/streets-v11/tiles/{z}/{x}/{y}?access_token=", mb_pk),
+        attribution = "© <a href='https://www.mapbox.com/about/maps/'>Mapbox</a> © <a href='http://www.openstreetmap.org/copyright'>OpenStreetMap</a> <strong><a href='https://www.mapbox.com/map-feedback/' target='_blank'>Improve this map</a></strong>"
+      ) |>
+      addPolylines(
+        data = eez,
+        group = "eez_line",
+        color = "red",
+        weight = 2,
+        opacity = 0.2,
+        label = "EEZ"
+      ) |> 
+      addPolygons(
+        group = "polygons_and_lines",
+        stroke = TRUE,
+        weight = 0.02,
+        color = "black",
+        fillOpacity = fill_opacity,
+        fillColor = "red",
+        highlight = highlightOptions(
+          color = 'yellow',
+          weight = 5,
+          bringToFront = FALSE,
+          sendToBack = TRUE,
+          stroke = 2,
+          opacity = 1
+        ),
+        popup = map_popup
+      ) |>
+      addPolylines(
+        group = "polygons_and_lines",
+        color = "black",
+        weight = 0.5
+      ) |> 
+      fitBounds(bbox[[1]], bbox[[2]], bbox[[3]], bbox[[4]]) |> 
+      addControl(shapes_displayed, position = "topright", layerId = "shapes_displayed")
     
     return(map)
   })
-  
   
   # filter by id
   output$filter_id_text <- renderText({
@@ -693,17 +699,9 @@ shinyServer(function(input, output, session) {
                                     inputId = "map_regions",
                                     selected = character(0))
     
-    shinyWidgets::updateMaterialSwitch(session = getDefaultReactiveDomain(),
-                                       inputId = "map_regions_all",
-                                       value = FALSE)
-    
     shinyWidgets::updatePickerInput(session = getDefaultReactiveDomain(),
-                                    inputId = "map_sector",
+                                    inputId = "map_sectors",
                                     selected = character(0))
-    
-    shinyWidgets::updateMaterialSwitch(session = getDefaultReactiveDomain(),
-                                       inputId = "map_sector_all",
-                                       value = FALSE)
     
     shiny::updateSelectInput(inputId = "map_facil_var", selected = "both")
     
@@ -713,55 +711,15 @@ shinyServer(function(input, output, session) {
     
   })
   
-  # export shapes handler
-  output$download_filtered_shapes <- downloadHandler(
-    filename = function() {
-      paste0(project, "_ous_shapes_", data_update_ymd, ".geojson")
-    },
-    content = function(file) {
-      write_sf(filtered_shapes(), file)
-    }
-  )
-  
-  ## fullscreen ----
-  observeEvent("map_fullscreen_button", ignoreInit = TRUE, {
-    
-    shapes <- filtered_shapes()
-    
-    # derive location and zoom level for map view from current shapes
-    bbox <- st_bbox(shapes)
-    bbox_centroid = c(mean(c(bbox[[1]], bbox[[3]])), mean(c(bbox[[2]], bbox[[4]])))
-    assign("starting_bbox_centroid", bbox_centroid, envir = .GlobalEnv)
-    bbox_area = (bbox[[3]] - bbox[[1]]) * (bbox[[4]] - bbox[[2]]) 
-    zoom_level = case_when(
-      bbox_area >= 1 ~ 7,
-      bbox_area < 1 & bbox_area >= 0.2 ~ 8,
-      bbox_area < 0.2 & bbox_area >= 1e-2 ~ 10,
-      bbox_area < 1e-2 & bbox_area >= 1e-4 ~ 11,
-      bbox_area < 1e-4 ~ 12
-    )
-    
-    mapdeck_update(map_id = "map") |> 
-      mapdeck_view(
-        location = bbox_centroid,
-        zoom = zoom_level,
-        duration = 400,
-        transition = "fly"
-      )
-  })
-  
-  ## map filters ----
+  ## update map -----
   observeEvent(
     c(
       input$filter_id,
-      input$shape_id,
-      input$map_regions,
-      input$map_sector,
-      input$map_facil_var
-    ), 
-    ignoreInit = TRUE,
-    
-    {
+      input$map_sectors,
+      input$map_facil_var,
+      input$map_regions
+    ), {
+      
       shapes <- shapes_reactive()
       
       if (input$filter_id == TRUE) {
@@ -774,9 +732,16 @@ shinyServer(function(input, output, session) {
         
       } else {
         
+        map_sectors <- if (is.null(input$map_sectors)) {
+          sectors
+        } else {
+          input$map_sectors
+        }
+        
+        # look for input$map_regions in region_represented column
         region_detected <- 
           if (is.null(input$map_regions)) {
-            sapply(shapes$regions_represented, function(x) FALSE) |> as.logical()
+            sapply(shapes$regions_represented, function(x) TRUE) |> as.logical()
           } else {
             sapply(shapes$regions_represented, function(x) any(str_detect(x, input$map_regions))) |> as.logical()
           }
@@ -791,23 +756,22 @@ shinyServer(function(input, output, session) {
         }
         
         shapes <- shapes |>
-          filter(sector %in% input$map_sector &
+          filter(sector %in% map_sectors &
                    is_facilitated %in% map_facil)
       }
       
-      # save shapes to state for download
       assign("filtered_shapes", reactive(shapes), env = .GlobalEnv)
       
-      # number of shapes displayed - overlaid on map
-      n_shapes_displayed <- nrow(shapes)
-      output$shapes_displayed <- renderUI(
-        HTML({
-          paste0(div(id = "shapes-number", n_shapes_displayed), ifelse(n_shapes_displayed != 1, " shapes", " shape"))
-        })
-      )
+      # number of shapes displayed - added to map with `addControl()`
+      shapes_displayed <- HTML({
+        paste0("Shapes displayed: ",
+               div(id = "shapes-number", nrow(shapes)))
+      })
       
-      # format map popup based on whether it's a fishing sector or not
-      shapes$map_popup <- paste0(
+      fill_opacity <- 0.5 / log(nrow(shapes))
+      fill_opacity <- ifelse(fill_opacity > 0.3, 0.3, fill_opacity)
+      
+      map_popup <- paste0(
         "<b>",
         shapes$sector,
         "</b>",
@@ -819,130 +783,47 @@ shinyServer(function(input, output, session) {
         shapes$facilitator_name
       )
       
-      fill_opacity <- round((1.2 / log(nrow(shapes) + 1)) * 100, digits = 0)
-      fill_opacity <- case_when(
-        fill_opacity > 50 | fill_opacity == 0 ~ "50",
-        fill_opacity < 10 ~ paste0("0", fill_opacity),
-        TRUE ~ as.character(fill_opacity)
-      )
-      
-      # derive location and zoom level for map view from current shapes
+      # get bbox for fitBounds()
       bbox <- st_bbox(shapes)
-      # if bbox is NA, revert to initial view
-      bbox_centroid <- if (!is.na(st_bbox(shapes)[[1]])) {
-        c(mean(c(bbox[[1]], bbox[[3]])), mean(c(bbox[[2]], bbox[[4]]))) 
-      } else {
-        starting_bbox_centroid
-      }
       
-      bbox_area = (bbox[[3]] - bbox[[1]]) * (bbox[[4]] - bbox[[2]]) 
-      zoom_level = case_when(
-        bbox_area >= 50 ~ 5,
-        bbox_area < 50 & bbox_area >= 10 ~ 6,
-        bbox_area < 10 & bbox_area >= 1 ~ 7,
-        bbox_area < 1 & bbox_area >= 0.1 ~ 8,
-        bbox_area < 0.1 & bbox_area >= 1e-2 ~ 10,
-        bbox_area < 1e-2 & bbox_area >= 1e-4 ~ 11,
-        bbox_area < 1e-4 ~ 12,
-        TRUE ~ 5
-      )
-      
-      ## map update ----
-      mapdeck_update(map_id = "map") |> 
-        add_polygon(
-          shapes,
-          fill_colour = paste0("#FF0000", fill_opacity),
-          tooltip = "map_popup",
-          auto_highlight = TRUE,
-          update_view = FALSE,
-          stroke_width = 50,
-          stroke_opacity = 0.5
-        ) |> 
-        mapdeck_view(
-          location = bbox_centroid,
-          zoom = zoom_level,
-          duration = 400,
-          transition = "fly"
-        )
-    })
+      leafletProxy("map", data = shapes) |> 
+        clearGroup("polygons_and_lines") |> 
+        removeControl("shapes_displayed") |> 
+        fitBounds(bbox[[1]], bbox[[2]], bbox[[3]], bbox[[4]]) |> 
+        addPolygons(
+          group = "polygons_and_lines",
+          stroke = TRUE,
+          weight = 0.02,
+          color = "black",
+          fillOpacity = fill_opacity,
+          fillColor = "red",
+          highlight = highlightOptions(
+            color = 'yellow',
+            weight = 5,
+            bringToFront = FALSE,
+            sendToBack = TRUE,
+            stroke = 2,
+            opacity = 1
+          ),
+          popup = map_popup
+        ) |>
+        addPolylines(
+          group = "polygons_and_lines",
+          color = "black",
+          weight = 0.5
+          ) |>
+        addControl(shapes_displayed, position = "topright", layerId = "shapes_displayed")
+    },
+    ignoreInit = TRUE
+    )
   
-  
-  # REPORTING -----------------------------
-  # 
-  # reporting_totals <- reactiveVal()
-  # 
-  # observe({
-  #   reporting_totals(
-  #     make_reporting_totals(
-  #       responses = responses_reactive(),
-  #       shapes = shapes_reactive(),
-  #       max_rep = max_rep()
-  #     )
-  #   )
-  # })
-  # 
-  # reporting_by_sector <- reactiveVal()
-  # 
-  # observe({
-  #   reporting_by_sector(
-  #     make_reporting_by_sector(
-  #       responses = responses_reactive(),
-  #       shapes = shapes_reactive()
-  #     )
-  #   )
-  # })
-  # 
-  # output$reporting_totals_table <- DT::renderDataTable(
-  #   DT::datatable(
-  #     reporting_totals(),
-  #     options = list(
-  #       pageLength = 100,
-  #       dom = "t",
-  #       lengthChange = FALSE,
-  #       searching = FALSE
-  #     )
-  #   ),
-  #   server = FALSE
-  # )
-  # 
-  # output$reporting_by_sector_table <- DT::renderDataTable(
-  #   DT::datatable(
-  #     reporting_by_sector(),
-  #     options = list(
-  #       pageLength = 100,
-  #       dom = "t",
-  #       lengthChange = FALSE,
-  #       searching = FALSE,
-  #       columnDefs = list(list(width = '250px', targets = "Sector"))
-  #     )
-  #   ),
-  #   server = FALSE
-  # )
-  # 
-  # # reporting table titles
-  # output$reporting_totals_title <- renderText("Totals")
-  # output$reporting_by_sector_title <- renderText("By Sector")
-  # 
-  # ## download CSVs ----
-  # data_report_totals <- reactive(reporting_totals())
-  # 
-  # output$download_report_totals <- downloadHandler(
-  #   filename = function() {
-  #     paste0(project, "_ous_reporting_totals.csv")
-  #   },
-  #   content = function(file) {
-  #     write_csv(data_report_totals(), file)
-  #   }
-  # )
-  # 
-  # data_report_sector <- reactive(reporting_by_sector())
-  # 
-  # output$download_report_sector <- downloadHandler(
-  #   filename = function() {
-  #     paste0(project, "_ous_reporting_by_sector.csv")
-  #   },
-  #   content = function(file) {
-  #     write_csv(data_report_sector(), file)
-  #   }
-  # )
+  # export shapes handler
+  output$download_filtered_shapes <- downloadHandler(
+    filename = function() {
+      paste0(project, "_ous_shapes_", data_update_ymd, ".geojson")
+    },
+    content = function(file) {
+      write_sf(filtered_shapes(), file)
+    }
+  )
 })

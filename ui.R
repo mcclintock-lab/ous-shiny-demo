@@ -296,7 +296,7 @@ ui <- (dashboardPage(
                     # clear filters
                     shinyWidgets::actionBttn(
                       "clear_shape_filters",
-                      "Clear Map & Filters",
+                      "Reset Filters",
                       style = "simple",
                       # size = "sm",
                       icon = icon("refresh")
@@ -315,19 +315,23 @@ ui <- (dashboardPage(
                       inputId = "map_regions",
                       label = "Regions: ",
                       choices = region_list,
-                      selected = region_list,
                       multiple = TRUE,
-                      options = list(`actions-box` = TRUE)
+                      options = shinyWidgets::pickerOptions(
+                        actionsBox = TRUE,
+                        noneSelectedText = "All"
+                      )
                     ),
                     
                     # sector filter dropdown
                     shinyWidgets::pickerInput(
-                      inputId = "map_sector",
+                      inputId = "map_sectors",
                       label = "Sectors: ",
                       choices = sectors,
-                      selected = sectors,
                       multiple = TRUE,
-                      options = list(`actions-box` = TRUE)
+                      options = shinyWidgets::pickerOptions(
+                        actionsBox = TRUE,
+                        noneSelectedText = "All"
+                      )
                     ),
                     
                     # filter by facilitation
@@ -371,7 +375,7 @@ ui <- (dashboardPage(
                     
                     box(
                       width = "50%",
-                      mapdeckOutput("map", width = "100%", height = "80vh"),
+                      leafletOutput("map", width = "100%", height = "80vh"),
                       
                       absolutePanel(
                         div(
@@ -392,10 +396,11 @@ ui <- (dashboardPage(
                           shinyWidgets::actionBttn(
                             "map_fullscreen_button",
                             icon = icon("expand"),
-                            style = "simple"
+                            style = "simple",
+                            size = "sm"
                           )
                         ),
-                        top = "20px",
+                        top = "90px",
                         left = "20px"
                       )
                     ))
