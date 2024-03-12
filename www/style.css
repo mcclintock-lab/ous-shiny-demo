@@ -95,7 +95,6 @@ html, body {
  .form-control {
    min-width: 100px;
    padding-right: 23px !important;
-   padding-left: 10px !important;
  }
  
  /* clear column filter box icon */
@@ -273,6 +272,7 @@ html, body {
    background-color: #00A6E1;
    color: white;
    margin-bottom: 20px;
+   margin-right: 12px;
    height: 25px;
    font-size: 11pt;
    padding-top: 0px;
@@ -401,7 +401,7 @@ html, body {
  #map_fullscreen_button {
    color: black;
    border-color: black;
-   background-color: #FFFFFF95 !important;
+   background-color: #FFFFFF !important;
  }
  
 /* ---- reporting page ---- */
